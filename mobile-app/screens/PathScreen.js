@@ -60,11 +60,12 @@ const PathScreen = ({ route, navigation }) => {
             </TouchableOpacity>
 
             <Animated.View style={[styles.menu, { transform: [{ translateX: slideAnim }] }]}>
+
+            <TouchableOpacity onPress={handleRecommendations} style={styles.menuItem}>
+                <Text style={styles.menuText}>Home</Text>
+            </TouchableOpacity>
                 <TouchableOpacity onPress={handleExit} style={styles.menuItem}>
                     <Text style={styles.menuText}>New List</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={handleRecommendations} style={styles.menuItem}>
-                    <Text style={styles.menuText}>Ask Viare AI</Text>
                 </TouchableOpacity>
             </Animated.View>
 
