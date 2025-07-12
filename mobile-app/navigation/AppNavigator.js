@@ -5,7 +5,10 @@ import LoginScreen from '../screens/LoginScreen';
 import SignupScreen from '../screens/SignupScreen';
 import WelcomeScreen from '../screens/WelcomeScreen';
 import PathScreen from '../screens/PathScreen';
-// import other screens like PathScreen, HomeScreen, etc.
+import RecommendScreen from '../screens/RecommendScreen';
+import AlternativeScreen from '../screens/AlternativeScreen';
+import SuggestionScreen from '../screens/SuggestionScreen';
+
 
 const Stack = createNativeStackNavigator();
 
@@ -16,7 +19,10 @@ const AppNavigator = () => {
             <Stack.Screen name="Signup" component={SignupScreen} />
             <Stack.Screen name="Welcome" component={WelcomeScreen} />
             <Stack.Screen name="PathScreen" component={PathScreen} />
-            {/* Add other screens here */}
+            <Stack.screen name="Recommend" component={RecommendScreen} />
+            <Stack.Screen name="AlternativeScreen" component={AlternativeScreen} />
+            <Stack.Screen name="SuggestionScreen" component={SuggestionScreen} />
+            { }
         </Stack.Navigator>
     );
 };

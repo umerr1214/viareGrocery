@@ -10,18 +10,20 @@ import {
     Platform
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
-import { auth } from '../firebaseConfig';
+import { auth } from '../firebase/firebaseConfig';
 
 const WelcomeScreen = ({ navigation }) => {
     const [listText, setListText] = useState('');
     const [username, setUsername] = useState('');
 
     useEffect(() => {
-        const currentUser = auth.currentUser;
-        if (currentUser) {
-            const emailName = currentUser.email.split('@')[0];
-            setUsername(emailName.charAt(0).toUpperCase() + emailName.slice(1));
-        }
+        const unsubscribe = auth.onAuthStateChanged(user => {
+            if (user && user.displayName) {
+                setUsername(user.displayName);
+            }
+        });
+
+        return () => unsubscribe(); // clean up on unmount
     }, []);
 
     const pasteFromClipboard = async () => {
@@ -39,7 +41,6 @@ const WelcomeScreen = ({ navigation }) => {
             return;
         }
 
-        // Optionally split list into array and pass it to next screen
         const listArray = listText
             .split('\n')
             .map(item => item.trim())
@@ -49,33 +50,34 @@ const WelcomeScreen = ({ navigation }) => {
             products: listArray,
         };
 
-        //data cleaning here
-
         navigation.navigate('PathScreen', { shoppingData });
     };
 
     return (
-        <KeyboardAvoidingView behavior="height" style={styles.container}>
-        <Text style={styles.logo}>TeamRouter</Text>
+        <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.container}
+        >
+            <Text style={styles.logo}>Viare Grocery</Text>
             <Text style={styles.heading}>Welcome, {username} 👋</Text>
             <Text style={styles.subheading}>
                 Enter your shopping list below to begin your smart grocery journey!
             </Text>
 
             <TextInput
-                style={styles.textArea}
-                placeholder="Paste or type your list here...\ne.g. Milk\nBread\nEggs"
-                multiline
+                style={styles.input}
+                placeholder={`Paste or type your list here...\ne.g. Milk\nBread\nEggs`}
+                multiline={true}
                 value={listText}
                 onChangeText={setListText}
             />
 
             <TouchableOpacity style={styles.pasteBtn} onPress={pasteFromClipboard}>
-                <Text style={styles.pasteText}>📋 Paste from Clipboard</Text>
+                <Text style={styles.pasteText}>Paste from Clipboard</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.nextBtn} onPress={handleNext}>
-                <Text style={styles.nextText}>Next ➡️</Text>
+                <Text style={styles.nextText}>Next</Text>
             </TouchableOpacity>
         </KeyboardAvoidingView>
     );
@@ -84,6 +86,16 @@ const WelcomeScreen = ({ navigation }) => {
 export default WelcomeScreen;
 
 const styles = StyleSheet.create({
+    input: {
+        borderWidth: 2,
+        borderColor: '#14b8a6',
+        borderRadius: 6,
+        padding: 12,
+        fontSize: 16,
+        minHeight: 100,
+        textAlignVertical: 'top',
+        backgroundColor: '#fff',
+    },
     container: {
         flex: 1,
         backgroundColor: '#f9fafb',
@@ -110,16 +122,6 @@ const styles = StyleSheet.create({
         color: '#374151',
         textAlign: 'center',
         marginBottom: 20,
-    },
-    textArea: {
-        height: 180,
-        borderColor: '#14b8a6',
-        borderWidth: 2,
-        borderRadius: 8,
-        padding: 12,
-        fontSize: 16,
-        backgroundColor: '#fff',
-        textAlignVertical: 'top',
     },
     pasteBtn: {
         marginTop: 15,

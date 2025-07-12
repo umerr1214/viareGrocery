@@ -7,16 +7,23 @@ import {
     StyleSheet,
     Alert
 } from 'react-native';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebaseConfig'; // adjust if in a different path
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { auth } from '../firebase/firebaseConfig'; // adjust if in a different path
 
 const SignupScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [name, setName] = useState('');
 
     const handleSignup = async () => {
         try {
-            await createUserWithEmailAndPassword(auth, email, password);
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            await updateProfile(user, {
+                displayName: name
+            });
+
             Alert.alert('Success', 'Account created successfully!');
             navigation.navigate('Login');
         } catch (error) {
@@ -29,6 +36,17 @@ const SignupScreen = ({ navigation }) => {
             <Text style={styles.logo}>Viare Grocery</Text>
             <Text style={styles.heading}>GET ON BOARD!</Text>
             <Text style={styles.subheading}>CREATE AN ACCOUNT</Text>
+
+            <View style={styles.formGroup}>
+                <Text style={styles.label}>Name</Text>
+                <TextInput
+                    style={styles.input}
+                    placeholder="What shall we call you?"
+                    value={name}
+                    onChangeText={setName}
+                    autoCapitalize="words"
+                />
+            </View>
 
             <View style={styles.formGroup}>
                 <Text style={styles.label}>Email</Text>
