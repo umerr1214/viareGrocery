@@ -1,27 +1,34 @@
-const express = require('express');
-const router = express.Router();
-const { findShortestPath } = require('../utils/dijkstra');
-const aisleMap = require('../data/productToAisleMap.json');
-const storeGraph = require('../data/storeGraph.json');
+const db = require('../firebase/firestoreService');
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { products } = req.body;
 
-  // 1. Map products to aisle nodes
-  const aisles = products
-    .map(p => aisleMap[p.toLowerCase()])
-    .filter(Boolean);
+  try {
+    const storeRef = db.collection('storeMaps').doc('demoStore');
+    const doc = await storeRef.get();
+    if (!doc.exists) {
+      return res.status(404).json({ error: 'Store map not found' });
+    }
 
-  const path = findShortestPath(storeGraph, 'Entrance', aisles, 'Counter');
+    const aisleMap = doc.data().productToAisleMap;
 
-  const instructions = path.map((node, idx) => {
-    if (idx === 0) return 'Start at Entrance';
-    if (idx === path.length - 1) return 'Proceed to Counter';
-    const product = Object.entries(aisleMap).find(([k, v]) => v === node);
-    return `Go to ${node} – Pick ${product?.[0] || 'item'}`;
-  });
+    const aisles = products
+      .map(p => aisleMap[p.trim()])
+      .filter(Boolean);
 
-  res.json({ path, instructions });
+    const path = findShortestPath(storeGraph, 'Entrance', aisles, 'Counter');
+
+    const instructions = path.map((node, idx) => {
+      if (idx === 0) return 'Start at Entrance';
+      if (idx === path.length - 1) return 'Proceed to Counter';
+
+      const matchedProduct = Object.entries(aisleMap).find(([k, v]) => v === node);
+      return `Go to ${node} – Pick ${matchedProduct?.[0] || 'item'}`;
+    });
+
+    res.json({ path, instructions });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal error' });
+  }
 });
-
-module.exports = router;

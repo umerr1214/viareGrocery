@@ -1,4 +1,6 @@
-{
+const db = require('../firebase/firestoreService');
+
+const productMap = {
   "Zeera": "Aisle1",
   "Haldi": "Aisle1",
   "Laal Mirch": "Aisle1",
@@ -299,4 +301,21 @@
   "Cola 4": "Aisle20",
   "Juice 4": "Aisle20",
   "Energy Drink 4": "Aisle20"
+};
+
+async function seed() {
+  try {
+    const ref = db.collection('storeMaps').doc('demoStore');
+    await ref.set({ productToAisleMap: productMap }, { merge: true });
+    console.log('✅ Seeded expanded map to Firestore');
+  } catch (error) {
+    console.error('❌ Error seeding data:', error.message);
+    console.log('💡 Make sure Firestore database is created in your Firebase project');
+    console.log('💡 Visit: https://console.firebase.google.com/project/viaregrocery/firestore');
+  }
 }
+
+seed().then(() => process.exit()).catch((error) => {
+  console.error('❌ Script failed:', error.message);
+  process.exit(1);
+});
