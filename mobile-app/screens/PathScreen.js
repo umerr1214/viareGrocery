@@ -37,7 +37,7 @@ const PathScreen = ({ route, navigation }) => {
     }, []);
 
     const handleExit = () => navigation.navigate('Welcome');
-    const handleRecommendations = () => navigation.navigate('Recommendations');
+    // const handleRecommendations = () => navigation.navigate('Recommendations'); // Screen doesn't exist yet
 
     return (
         <View style={styles.container}>
@@ -45,9 +45,9 @@ const PathScreen = ({ route, navigation }) => {
                 <TouchableOpacity onPress={handleExit}>
                     <Text style={styles.navText}>← Exit</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={handleRecommendations}>
+                {/* <TouchableOpacity onPress={handleRecommendations}>
                     <Text style={styles.navText}>💡 AI Recommendations</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
             </View>
 
             <Text style={styles.heading}>🛒 Your Shopping Path</Text>

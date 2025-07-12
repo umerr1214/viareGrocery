@@ -1,4 +1,3 @@
-navigation.navigate('Signup');
 import React, { useState } from 'react';
 import {
     View,

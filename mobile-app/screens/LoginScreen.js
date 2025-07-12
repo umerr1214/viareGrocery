@@ -14,7 +14,7 @@ const LoginScreen = ({ navigation }) => {
         try {
             await signInWithEmailAndPassword(auth, email, password);
             Alert.alert('Login Successful!', 'Welcome back!');
-            navigation.navigate('Path'); // Replace with your main screen
+            navigation.navigate('Welcome'); // Navigate to Welcome screen
         } catch (error) {
             Alert.alert('Login Failed', error.message);
         }

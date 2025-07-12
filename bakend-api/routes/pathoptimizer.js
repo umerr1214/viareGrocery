@@ -1,4 +1,8 @@
+const express = require('express');
+const router = express.Router();
 const db = require('../firebase/firestoreService');
+const { findShortestPath } = require('../utils/dijkstra');
+const storeGraph = require('../data/storeGraph.json');
 
 router.post('/', async (req, res) => {
   const { products } = req.body;
@@ -32,3 +36,5 @@ router.post('/', async (req, res) => {
     res.status(500).json({ error: 'Internal error' });
   }
 });
+
+module.exports = router;
