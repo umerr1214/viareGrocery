@@ -5,7 +5,7 @@ import {
     TextInput,
     TouchableOpacity,
     StyleSheet,
-    Alert
+    Alert, Image
 } from 'react-native';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '../firebase/firebaseConfig'; // adjust if in a different path
@@ -33,7 +33,14 @@ const SignupScreen = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.logo}>Viare Grocery</Text>
+            <View style={styles.logoRow}>
+                <Image
+                    source={require('../assets/logo.png')}
+                    style={styles.logoImage}
+                    resizeMode="contain"
+                />
+                <Text style={styles.logoText}>Viare Grocery</Text>
+            </View>
             <Text style={styles.heading}>GET ON BOARD!</Text>
             <Text style={styles.subheading}>CREATE AN ACCOUNT</Text>
 
@@ -96,13 +103,22 @@ const styles = StyleSheet.create({
         padding: 20,
         justifyContent: 'center',
     },
-    logo: {
-        fontSize: 28,
+    logoRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 12,
+    },
+    logoImage: {
+        width: 48,
+        height: 48,
+        marginRight: 8,
+    },
+    logoText: {
+        fontSize: 24,
         fontWeight: '300',
-        color: '#14b8a6',
         letterSpacing: 1,
-        textAlign: 'center',
-        marginBottom: 20,
+        color: '#14b8a6',
     },
     heading: {
         fontSize: 28,

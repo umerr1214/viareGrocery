@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
+import { Image } from 'react-native';
 import {
     View,
     Text,
@@ -7,14 +8,18 @@ import {
     TouchableOpacity,
     Alert,
     KeyboardAvoidingView,
-    Platform
+    Platform,
+    Animated,
+    Easing
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
-import { auth } from '../firebase/firebaseConfig';
+import {auth} from '../firebase/firebaseConfig';
 
-const WelcomeScreen = ({ navigation }) => {
+const WelcomeScreen = ({navigation}) => {
     const [listText, setListText] = useState('');
     const [username, setUsername] = useState('');
+    const [menuOpen, setMenuOpen] = useState(false);
+    const slideAnim = useState(new Animated.Value(-200))[0];
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged(user => {
@@ -25,6 +30,16 @@ const WelcomeScreen = ({ navigation }) => {
 
         return () => unsubscribe(); // clean up on unmount
     }, []);
+
+    const toggleMenu = () => {
+        setMenuOpen(!menuOpen);
+        Animated.timing(slideAnim, {
+            toValue: menuOpen ? -200 : 0,
+            duration: 300,
+            useNativeDriver: true,
+            easing: Easing.out(Easing.ease)
+        }).start();
+    };
 
     const pasteFromClipboard = async () => {
         const clipboardText = await Clipboard.getStringAsync();
@@ -50,7 +65,7 @@ const WelcomeScreen = ({ navigation }) => {
             products: listArray,
         };
 
-        navigation.navigate('PathScreen', { shoppingData });
+        navigation.navigate('PathScreen', {shoppingData});
     };
 
     return (
@@ -58,7 +73,24 @@ const WelcomeScreen = ({ navigation }) => {
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             style={styles.container}
         >
-            <Text style={styles.logo}>Viare Grocery</Text>
+            <TouchableOpacity onPress={toggleMenu} style={styles.menuButton}>
+                <Text style={styles.menuIcon}>☰</Text>
+            </TouchableOpacity>
+
+            <Animated.View style={[styles.menu, {transform: [{translateX: slideAnim}]}]}>
+                <TouchableOpacity onPress={() => navigation.navigate('Recommend')} style={styles.menuItem}>
+                    <Text style={styles.menuText}>Back to Home</Text>
+                </TouchableOpacity>
+            </Animated.View>
+
+            <View style={styles.logoRow}>
+                <Image
+                    source={require('../assets/logo.png')}
+                    style={styles.logoImage}
+                    resizeMode="contain"
+                />
+                <Text style={styles.logoText}>Viare Grocery</Text>
+            </View>
             <Text style={styles.heading}>Welcome, {username} 👋</Text>
             <Text style={styles.subheading}>
                 Enter your shopping list below to begin your smart grocery journey!
@@ -86,29 +118,57 @@ const WelcomeScreen = ({ navigation }) => {
 export default WelcomeScreen;
 
 const styles = StyleSheet.create({
-    input: {
-        borderWidth: 2,
-        borderColor: '#14b8a6',
-        borderRadius: 6,
-        padding: 12,
-        fontSize: 16,
-        minHeight: 100,
-        textAlignVertical: 'top',
-        backgroundColor: '#fff',
-    },
     container: {
         flex: 1,
         backgroundColor: '#f9fafb',
         padding: 24,
         justifyContent: 'center',
     },
-    logo: {
+    menuButton: {
+        position: 'absolute',
+        top: 40,
+        left: 20,
+        zIndex: 10
+    },
+    menuIcon: {
+        fontSize: 26,
+        color: '#0d9488'
+    },
+    menu: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: 200,
+        height: '100%',
+        backgroundColor: '#e0f7f5',
+        paddingTop: 80,
+        paddingHorizontal: 20,
+        zIndex: 9
+    },
+    menuItem: {
+        marginVertical: 12
+    },
+    menuText: {
+        fontSize: 16,
+        color: '#0d9488',
+        fontWeight: '600'
+    },
+    logoRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 12,
+    },
+    logoImage: {
+        width: 48,
+        height: 48,
+        marginRight: 8,
+    },
+    logoText: {
         fontSize: 24,
         fontWeight: '300',
         letterSpacing: 1,
         color: '#14b8a6',
-        textAlign: 'center',
-        marginBottom: 12,
     },
     heading: {
         fontSize: 26,
@@ -122,6 +182,16 @@ const styles = StyleSheet.create({
         color: '#374151',
         textAlign: 'center',
         marginBottom: 20,
+    },
+    input: {
+        borderWidth: 2,
+        borderColor: '#14b8a6',
+        borderRadius: 6,
+        padding: 12,
+        fontSize: 16,
+        minHeight: 100,
+        textAlignVertical: 'top',
+        backgroundColor: '#fff',
     },
     pasteBtn: {
         marginTop: 15,
