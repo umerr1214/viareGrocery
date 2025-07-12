@@ -45,13 +45,13 @@ const WelcomeScreen = ({ navigation }) => {
             .map(item => item.trim())
             .filter(item => item.length > 0);
 
-        const payload = {
+        const shoppingData = {
             products: listArray,
         };
 
         //data cleaning here
 
-        navigation.navigate('PathScreen', { products: listArray });
+        navigation.navigate('PathScreen', { shoppingData });
     };
 
     return (
