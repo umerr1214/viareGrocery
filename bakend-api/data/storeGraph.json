@@ -1,11 +1,28 @@
 {
-  "nodes": ["Entrance", "Aisle1", "Aisle2", "Aisle3", "Aisle4", "Aisle5", "Counter"],
+  "nodes": ["Entrance", "Aisle1", "Aisle2", "Aisle3", "Aisle4", "Aisle5", "Aisle6", "Aisle7", "Aisle8", "Aisle9", "Aisle10", "Aisle11", "Aisle12", "Aisle13", "Aisle14", "Aisle15", "Aisle16", "Aisle17", "Aisle18", "Aisle19", "Aisle20", "Counter", "Exit"],
   "edges": {
-    "Entrance": { "Aisle1": 2, "Aisle2": 4 },
-    "Aisle1": { "Aisle2": 2, "Aisle3": 3 },
-    "Aisle2": { "Aisle4": 4 },
-    "Aisle3": { "Counter": 5 },
-    "Aisle4": { "Counter": 2 },
-    "Aisle5": { "Counter": 3 }
+    "Entrance": { "Aisle16": 1, "Aisle8": 1, "Counter": 1 },
+    "Aisle1": { "Aisle2": 1, "Aisle9": 1, "Aisle8": 1, "Aisle17": 1, "Aisle15": 1 },
+    "Aisle2": { "Aisle1": 1, "Aisle3": 1, "Aisle9": 1, "Aisle8": 1, "Aisle10": 1, "Aisle17": 1 },
+    "Aisle3": { "Aisle2": 1, "Aisle4": 1, "Aisle9": 1, "Aisle10": 1, "Aisle11": 1, "Aisle17": 1 },
+    "Aisle4": { "Aisle3": 1, "Aisle5": 1, "Aisle10": 1, "Aisle11": 1, "Aisle12": 1, "Aisle17": 1 },
+    "Aisle5": { "Aisle4": 1, "Aisle6": 1, "Aisle11": 1, "Aisle12": 1, "Aisle13": 1, "Aisle18": 1 },
+    "Aisle6": { "Aisle5": 1, "Aisle7": 1, "Aisle14": 1, "Aisle12": 1, "Aisle13": 1, "Aisle18": 1 },
+    "Aisle7": { "Aisle6": 1, "Aisle19": 1, "Aisle14": 1, "Aisle13": 1, "Aisle20": 1, "Aisle18": 1 },
+    "Aisle8": { "Aisle1": 1, "Aisle2": 1, "Aisle9": 1, "Entrance": 1, "Aisle15": 1, "Aisle16": 1, "Counter": 1 },
+    "Aisle9": { "Aisle1": 1, "Aisle2": 1, "Aisle3": 1, "Aisle8": 1, "Aisle10": 1, "Counter": 1 },
+    "Aisle10": { "Aisle4": 1, "Aisle2": 1, "Aisle3": 1, "Aisle9": 1, "Aisle11": 1, "Counter": 1 },
+    "Aisle11": { "Aisle4": 1, "Aisle3": 1, "Aisle5": 1, "Aisle10": 1, "Aisle12": 1, "Counter": 1 },
+    "Aisle12": { "Aisle4": 1, "Aisle6": 1, "Aisle5": 1, "Aisle13": 1, "Aisle11": 1, "Counter": 1 },
+    "Aisle13": { "Aisle7": 1, "Aisle6": 1, "Aisle5": 1, "Aisle12": 1, "Aisle14": 1, "Counter": 1, "Exit": 1 },
+    "Aisle14": { "Aisle7": 1, "Aisle6": 1, "Aisle19": 1, "Aisle13": 1, "Aisle20": 1, "Counter": 1, "Exit": 1 },
+    "Aisle15": { "Aisle16": 1, "Aisle8": 1, "Aisle17": 1, "Aisle1": 1 },
+    "Aisle16": { "Entrance": 1, "Aisle15": 1, "Aisle8": 1, "Aisle1": 1 },
+    "Aisle17": { "Aisle1": 1, "Aisle2": 1, "Aisle3": 1, "Aisle4": 1, "Aisle15": 1, "Aisle18": 1 },
+    "Aisle18": { "Aisle5": 1, "Aisle6": 1, "Aisle7": 1, "Aisle17": 1, "Aisle19": 1 },
+    "Aisle19": { "Aisle18": 1, "Aisle7": 1, "Aisle14": 1, "Aisle20": 1 },
+    "Aisle20": { "Aisle19": 1, "Aisle7": 1, "Aisle14": 1, "Exit": 1 },
+    "Counter": { "Entrance": 1, "Aisle8": 1, "Aisle9": 1, "Aisle10": 1, "Aisle11": 1, "Aisle12": 1, "Aisle13": 1, "Aisle14": 1, "Exit": 1 },
+    "Exit": { "Aisle20": 1, "Aisle14": 1, "Counter": 1 }
   }
 }
