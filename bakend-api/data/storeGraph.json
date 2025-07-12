@@ -1,0 +1,11 @@
+{
+  "nodes": ["Entrance", "Aisle1", "Aisle2", "Aisle3", "Aisle4", "Aisle5", "Counter"],
+  "edges": {
+    "Entrance": { "Aisle1": 2, "Aisle2": 4 },
+    "Aisle1": { "Aisle2": 2, "Aisle3": 3 },
+    "Aisle2": { "Aisle4": 4 },
+    "Aisle3": { "Counter": 5 },
+    "Aisle4": { "Counter": 2 },
+    "Aisle5": { "Counter": 3 }
+  }
+}
