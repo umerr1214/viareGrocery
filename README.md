@@ -1,6 +1,6 @@
-# Shahi Tukre - Smart Grocery Shopping App
+# Viare Grocery - AI-Powered In-Store Shopping Assistant
 
-A comprehensive grocery shopping application with AI-powered recommendations, store path optimization, and intelligent product analysis.
+A comprehensive In-store grocery shopping application with AI-powered recommendations, store path optimization, and intelligent product analysis.
 
 ## 🚀 Features
 
@@ -51,6 +51,15 @@ A comprehensive grocery shopping application with AI-powered recommendations, st
 4. **Alternative Screen** - Product alternatives with AI
 5. **Suggestion Screen** - Image-based product analysis
 6. **Path Screen** - Store navigation optimization
+
+---
+
+## 🏆 Hackathon Submission
+
+This project was built in under 24 hours as part of Remote Base Hackathon 3.0.  
+We set out to revolutionize physical retail with the intelligence and personalization of online shopping — and we’re just getting started.
+
+---
 
 ## 🚀 Quick Start
 
@@ -167,4 +176,4 @@ This project is licensed under the MIT License.
 
 ---
 
-**Built with ❤️ for smart grocery shopping**
+**Built with ❤️ by Team Shahi Tukre**
