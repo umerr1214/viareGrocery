@@ -12,8 +12,8 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
-import { ref, get } from 'firebase/database';
-import { database } from '../firebase/firebaseConfig';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase/firebaseConfig';
 
 const SuggestScreen = ({ navigation }) => {
     const [images, setImages] = useState([]);
@@ -31,18 +31,34 @@ const SuggestScreen = ({ navigation }) => {
 
     const fetchCategoriesFromFirebase = async () => {
         try {
-            const snapshot = await get(ref(database, 'storeMaps/categoryList'));
-
-            if (snapshot.exists()) {
-                const data = snapshot.val();
-
-                const categoryArray = Array.isArray(data)
-                    ? data.filter(Boolean)
-                    : Object.values(data);
-
+            const docRef = doc(db, 'storeMaps', 'categoryList');
+            const docSnap = await getDoc(docRef);
+            
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                
+                // Assuming categories are stored as an array or object
+                let categoryArray = [];
+                
+                if (Array.isArray(data)) {
+                    // Handle nested array case
+                    if (data.length > 0 && Array.isArray(data[0])) {
+                        categoryArray = data[0].filter(Boolean);
+                    } else {
+                        categoryArray = data.filter(Boolean);
+                    }
+                } else if (typeof data === 'object') {
+                    categoryArray = Object.values(data).filter(Boolean);
+                }
+                
+                // Additional flattening in case the data structure is more complex
+                if (categoryArray.length === 1 && Array.isArray(categoryArray[0])) {
+                    categoryArray = categoryArray[0].filter(Boolean);
+                }
+                
                 setCategories(categoryArray);
             } else {
-                console.warn('No categories found in Firebase.');
+                console.warn('No categories found in Firestore.');
             }
         } catch (err) {
             console.error('Failed to fetch categories:', err);
@@ -104,6 +120,12 @@ const SuggestScreen = ({ navigation }) => {
 
             formData.append('category', selectedCategory);
 
+            console.log('Sending request with:', {
+                imagesCount: images.length,
+                category: selectedCategory,
+                endpoint: 'http://192.168.18.95:3001/api/suggest-direct'
+            });
+
             const response = await fetch('http://192.168.18.95:3001/api/suggest-direct', {
                 method: 'POST',
                 body: formData,
@@ -112,10 +134,20 @@ const SuggestScreen = ({ navigation }) => {
                 },
             });
 
+            console.log('Response status:', response.status);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Response error:', errorText);
+                setRecommendation(`Error: ${response.status} - ${errorText}`);
+                return;
+            }
+
             const data = await response.json();
+            console.log('Response data:', data);
             setRecommendation(data?.recommendation || "No response from AI.");
         } catch (error) {
-            console.error(error);
+            console.error('Request error:', error);
             setRecommendation("Something went wrong. Please try again.");
         } finally {
             setLoading(false);

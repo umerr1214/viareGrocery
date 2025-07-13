@@ -2,8 +2,8 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-async function getGeminiResponse({ images, prompt }) {
-    const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
+async function getGeminiResponse({ images, prompt, category }) {
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const imageParts = await Promise.all(
         images.map((file) => ({
