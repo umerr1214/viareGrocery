@@ -10,46 +10,115 @@ import {
     ActivityIndicator,
     Animated,
     Easing,
+    Alert,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
-import { getDatabase, ref, get } from 'firebase/database'; // For Firebase Realtime DB
+import { db } from '../firebase/firebaseConfig';
+import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
+import * as FileSystem from 'expo-file-system';
 
 const AlternativeScreen = ({ navigation }) => {
     const [image, setImage] = useState(null);
     const [productName, setProductName] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
+    const [selectedBrand, setSelectedBrand] = useState('');
     const [categories, setCategories] = useState([]);
+    const [brands, setBrands] = useState([]);
     const [loading, setLoading] = useState(false);
     const [aiResponse, setAiResponse] = useState('');
     const [menuOpen, setMenuOpen] = useState(false);
     const slideAnim = useState(new Animated.Value(-200))[0];
 
     useEffect(() => {
-        fetchCategoriesFromFirebase();
+        fetchCategoriesFromFirestore();
     }, []);
 
-    const fetchCategoriesFromFirebase = async () => {
+    useEffect(() => {
+        if (selectedCategory) {
+            fetchBrandsFromFirestore(selectedCategory);
+        }
+    }, [selectedCategory]);
+
+    const fetchCategoriesFromFirestore = async () => {
         try {
-            const db = getDatabase();
-            const snapshot = await get(ref(db, '/products'));
-            if (snapshot.exists()) {
-                const data = snapshot.val();
-                const uniqueCategories = [
-                    ...new Set(Object.values(data).map((item) => item.category)),
-                ];
-                setCategories(uniqueCategories);
+            const categoryBrandsRef = collection(db, 'categoryBrands');
+            const snapshot = await getDocs(categoryBrandsRef);
+            
+            const categoryList = [];
+            snapshot.forEach((doc) => {
+                categoryList.push(doc.id);
+            });
+            
+            setCategories(categoryList);
+        } catch (err) {
+            console.error('Failed to fetch categories from Firestore:', err);
+            setCategories([
+                'Dairy & Eggs',
+                'Bread & Bakery',
+                'Fruits & Vegetables',
+                'Meat & Seafood',
+                'Pantry & Staples',
+                'Snacks & Beverages',
+                'Frozen Foods',
+                'Household & Cleaning',
+                'Personal Care',
+                'Baby & Kids'
+            ]);
+        }
+    };
+
+    const fetchBrandsFromFirestore = async (category) => {
+        try {
+            const categoryDoc = doc(db, 'categoryBrands', category);
+            const categorySnapshot = await getDoc(categoryDoc);
+            
+            if (categorySnapshot.exists()) {
+                const categoryData = categorySnapshot.data();
+                
+                let brandList = [];
+                
+                if (categoryData.brands && Array.isArray(categoryData.brands)) {
+                    brandList = categoryData.brands;
+                } else if (Array.isArray(categoryData)) {
+                    brandList = categoryData;
+                } else if (typeof categoryData === 'object') {
+                    brandList = Object.keys(categoryData);
+                } else if (typeof categoryData === 'string') {
+                    try {
+                        const parsed = JSON.parse(categoryData);
+                        brandList = Array.isArray(parsed) ? parsed : Object.keys(parsed);
+                    } catch (e) {
+                        brandList = [categoryData];
+                    }
+                }
+                
+                setBrands(brandList);
+            } else {
+                try {
+                    const brandsRef = collection(db, 'categoryBrands', category, 'brands');
+                    const brandsSnapshot = await getDocs(brandsRef);
+                    const brandList = [];
+                    brandsSnapshot.forEach((doc) => {
+                        brandList.push(doc.id);
+                    });
+                    setBrands(brandList);
+                } catch (subErr) {
+                    setBrands([]);
+                }
             }
         } catch (err) {
-            console.error('Failed to fetch categories:', err);
+            console.error('Failed to fetch brands from Firestore:', err);
+            setBrands([]);
         }
     };
 
     const pickImage = async () => {
         const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: ImagePicker.MediaType.Images,
             allowsMultipleSelection: false,
-            quality: 1,
+            quality: 0.8,
+            base64: true,
         });
 
         if (!result.canceled) {
@@ -58,8 +127,8 @@ const AlternativeScreen = ({ navigation }) => {
     };
 
     const getAlternatives = async () => {
-        if (!image && (!productName || !selectedCategory)) {
-            alert('Upload a product image or fill in product name and category.');
+        if (!image && (!productName || !selectedCategory || !selectedBrand)) {
+            Alert.alert('Input Required', 'Upload a product image or fill in product name, category, and brand.');
             return;
         }
 
@@ -67,16 +136,46 @@ const AlternativeScreen = ({ navigation }) => {
         setAiResponse('');
 
         try {
-            // Fake delay and dummy AI logic (replace with real backend call)
-            setTimeout(() => {
-                setAiResponse(
-                    `✅ Based on the available brands in the "${selectedCategory}" category, the best alternative to "${productName}" is "Dairy Pure Milk" — offering better price, freshness, and nutrition.`
-                );
-                setLoading(false);
-            }, 2000);
-        } catch (err) {
-            console.error(err);
-            setAiResponse('Error getting alternatives. Try again.');
+            let imageBase64 = null;
+            
+            if (image) {
+                const base64 = await FileSystem.readAsStringAsync(image, {
+                    encoding: FileSystem.EncodingType.Base64,
+                });
+                imageBase64 = `data:image/jpeg;base64,${base64}`;
+            }
+
+            const requestBody = {
+                image: imageBase64,
+                productName: productName,
+                category: selectedCategory,
+                brand: selectedBrand,
+            };
+
+            const response = await fetch('http://192.168.18.95:3001/api/alternatives', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+            
+            if (data.success && data.alternative) {
+                setAiResponse(data.alternative);
+            } else {
+                throw new Error(data.error || 'No response from AI');
+            }
+        } catch (error) {
+            console.error('Error getting alternatives:', error);
+            Alert.alert('Error', 'Failed to get alternatives. Please try again.');
+            setAiResponse('Error getting alternatives. Please try again.');
+        } finally {
             setLoading(false);
         }
     };
@@ -105,30 +204,58 @@ const AlternativeScreen = ({ navigation }) => {
 
             <Text style={styles.heading}>Get Product Alternatives</Text>
 
-            <Text style={styles.subheading}>Upload a product image</Text>
+            <Text style={styles.subheading}>Upload a product image (Optional)</Text>
             <TouchableOpacity style={styles.attachBtn} onPress={pickImage}>
                 <Text style={styles.attachText}>Select Image</Text>
             </TouchableOpacity>
             {image && <Image source={{ uri: image }} style={styles.imagePreview} />}
 
-            <Text style={styles.subheading}>Or type product name & select category</Text>
+            <Text style={styles.subheading}>Enter product details</Text>
             <TextInput
                 style={styles.input}
-                placeholder="Enter product name"
+                placeholder="Enter product name (e.g., 'Milk', 'Bread')"
                 value={productName}
                 onChangeText={setProductName}
             />
 
-            <Picker
-                selectedValue={selectedCategory}
-                onValueChange={(itemValue) => setSelectedCategory(itemValue)}
-                style={styles.picker}
-            >
-                <Picker.Item label="Select category" value="" />
-                {categories.map((cat, i) => (
-                    <Picker.Item label={cat} value={cat} key={i} />
-                ))}
-            </Picker>
+            <Text style={styles.subheading}>Select Category</Text>
+            <View style={styles.pickerContainer}>
+                <Picker
+                    selectedValue={selectedCategory}
+                    onValueChange={(itemValue) => {
+                        setSelectedCategory(itemValue);
+                        setSelectedBrand('');
+                    }}
+                    style={styles.picker}
+                    mode="dropdown"
+                >
+                    <Picker.Item label="Select category" value="" />
+                    {categories.map((cat, i) => (
+                        <Picker.Item label={cat} value={cat} key={i} />
+                    ))}
+                </Picker>
+            </View>
+
+            {selectedCategory && (
+                <>
+                    <Text style={styles.subheading}>Select Brand</Text>
+                    <View style={styles.pickerContainer}>
+                        <Picker
+                            selectedValue={selectedBrand}
+                            onValueChange={(itemValue) => {
+                                setSelectedBrand(itemValue);
+                            }}
+                            style={styles.picker}
+                            mode="dropdown"
+                        >
+                            <Picker.Item label="Select brand" value="" />
+                            {brands.map((brand, i) => (
+                                <Picker.Item label={brand} value={brand} key={i} />
+                            ))}
+                        </Picker>
+                    </View>
+                </>
+            )}
 
             <TouchableOpacity style={styles.recommendBtn} onPress={getAlternatives}>
                 <Text style={styles.recommendText}>Find Best Alternative</Text>
@@ -186,6 +313,7 @@ const styles = StyleSheet.create({
         padding: 10,
         marginBottom: 10,
         backgroundColor: '#fff',
+        height: 50,
     },
     picker: {
         borderWidth: 1,
@@ -193,6 +321,15 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         borderRadius: 6,
         marginBottom: 20,
+        height: 50,
+    },
+    pickerContainer: {
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 6,
+        marginBottom: 20,
+        backgroundColor: '#fff',
+        height: 50,
     },
     recommendBtn: {
         backgroundColor: '#0d9488',
