@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
     View,
     Text,
@@ -9,6 +9,7 @@ import {
     Image
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import {get, getDatabase, ref} from "firebase/database";
 
 const RecommendScreen = () => {
     const navigation = useNavigation();
@@ -27,8 +28,8 @@ const RecommendScreen = () => {
             >
                 <Text style={styles.cardTitle}>Get Alternatives</Text>
                 <Text style={styles.cardDesc}>
-                    Can’t find your favorite product? Don’t worry! Viare AI will find
-                    the best alternatives for you, based on price, ingredients, and demand.
+                    Can’t find your favorite product at the store? Don’t worry! Viare AI will help you choose
+                    the best ones for you, based on price, ingredients, and demand.
                 </Text>
             </TouchableOpacity>
 
@@ -47,7 +48,7 @@ const RecommendScreen = () => {
                 style={styles.card}
                 onPress={() => navigation.navigate('Welcome')}
             >
-                <Text style={styles.cardTitle}>Get Optimized Path</Text>
+                <Text style={styles.cardTitle}>Get Store Navigation</Text>
                 <Text style={styles.cardDesc}>
                     Save time with a smart aisle-to-aisle route based on your grocery list,
                     so you never backtrack again!

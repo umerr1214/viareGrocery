@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
     View,
     Text,
@@ -11,6 +11,9 @@ import {
     Easing,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { Picker } from '@react-native-picker/picker';
+import { ref, get } from 'firebase/database';
+import { database } from '../firebase/firebaseConfig';
 
 const SuggestScreen = ({ navigation }) => {
     const [images, setImages] = useState([]);
@@ -18,6 +21,40 @@ const SuggestScreen = ({ navigation }) => {
     const [recommendation, setRecommendation] = useState('');
     const [menuOpen, setMenuOpen] = useState(false);
     const slideAnim = useRef(new Animated.Value(-200)).current;
+    const [selectedCategory, setSelectedCategory] = useState('');
+    const [categories, setCategories] = useState([]);
+
+    useEffect(() => {
+        fetchCategoriesFromFirebase();
+        getPermission();
+    }, []);
+
+    const fetchCategoriesFromFirebase = async () => {
+        try {
+            const snapshot = await get(ref(database, 'storeMaps/categoryList'));
+
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+
+                const categoryArray = Array.isArray(data)
+                    ? data.filter(Boolean)
+                    : Object.values(data);
+
+                setCategories(categoryArray);
+            } else {
+                console.warn('No categories found in Firebase.');
+            }
+        } catch (err) {
+            console.error('Failed to fetch categories:', err);
+        }
+    };
+
+    const getPermission = async () => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            alert('Permission required to access media library.');
+        }
+    };
 
     const toggleMenu = () => {
         setMenuOpen(!menuOpen);
@@ -36,7 +73,7 @@ const SuggestScreen = ({ navigation }) => {
             quality: 1,
         });
 
-        if (!result.canceled) {
+        if (!result.canceled && result.assets) {
             const selected = result.assets.map(asset => asset.uri);
             setImages(prev => [...prev, ...selected]);
         }
@@ -65,10 +102,14 @@ const SuggestScreen = ({ navigation }) => {
                 });
             });
 
-            const response = await fetch('http://YOUR_BACKEND_API/suggest', {
+            formData.append('category', selectedCategory);
+
+            const response = await fetch('http://192.168.18.95:3001/api/suggest-direct', {
                 method: 'POST',
                 body: formData,
-                headers: { 'Content-Type': 'multipart/form-data' },
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
             });
 
             const data = await response.json();
@@ -83,7 +124,6 @@ const SuggestScreen = ({ navigation }) => {
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
-            {/* Menu Button */}
             <TouchableOpacity onPress={toggleMenu} style={styles.menuButton}>
                 <Text style={styles.menuIcon}>☰</Text>
             </TouchableOpacity>
@@ -96,7 +136,7 @@ const SuggestScreen = ({ navigation }) => {
 
             <Text style={styles.heading}>Get Recommendations</Text>
             <Text style={styles.subheading}>
-                Upload pictures of products and let Viare AI compare and recommend the best one for you.
+                Upload product images and let Viare AI recommend the best one for you.
             </Text>
 
             <TouchableOpacity style={styles.attachBtn} onPress={pickImage}>
@@ -114,13 +154,25 @@ const SuggestScreen = ({ navigation }) => {
                 ))}
             </ScrollView>
 
+            <Text style={styles.subheading}>Select Category</Text>
+            <View style={styles.pickerContainer}>
+                <Picker
+                    selectedValue={selectedCategory}
+                    onValueChange={(itemValue) => setSelectedCategory(itemValue)}
+                    style={styles.picker}
+                >
+                    <Picker.Item label="Select category" value="" />
+                    {categories.map((cat, i) => (
+                        <Picker.Item label={cat} value={cat} key={i} />
+                    ))}
+                </Picker>
+            </View>
+
             <TouchableOpacity style={styles.recommendBtn} onPress={getRecommendations}>
                 <Text style={styles.recommendText}>Get Recommendations</Text>
             </TouchableOpacity>
 
-            {loading && (
-                <ActivityIndicator size="large" color="#0d9488" style={{ marginTop: 20 }} />
-            )}
+            {loading && <ActivityIndicator size="large" color="#0d9488" style={{ marginTop: 20 }} />}
 
             {recommendation !== '' && (
                 <View style={styles.resultBox}>
@@ -152,7 +204,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#374151',
         textAlign: 'center',
-        marginBottom: 20,
+        marginBottom: 12,
     },
     attachBtn: {
         backgroundColor: '#e0f7f5',
@@ -167,7 +219,7 @@ const styles = StyleSheet.create({
     },
     imagePreview: {
         flexDirection: 'row',
-        marginBottom: 20,
+        marginBottom: 10,
         marginTop: 10,
     },
     imageWrapper: {
@@ -198,6 +250,18 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 16,
         lineHeight: 16,
+    },
+    pickerContainer: {
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 6,
+        backgroundColor: '#fff',
+        marginBottom:10,
+        width: '100%',
+    },
+    picker: {
+        width: '100%',
+        height: 50,
     },
     recommendBtn: {
         backgroundColor: '#0d9488',
