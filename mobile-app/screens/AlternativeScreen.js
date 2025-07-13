@@ -220,20 +220,20 @@ const AlternativeScreen = ({ navigation }) => {
 
             <Text style={styles.subheading}>Select Category</Text>
             <View style={styles.pickerContainer}>
-                <Picker
-                    selectedValue={selectedCategory}
+            <Picker
+                selectedValue={selectedCategory}
                     onValueChange={(itemValue) => {
                         setSelectedCategory(itemValue);
                         setSelectedBrand('');
                     }}
-                    style={styles.picker}
+                style={styles.picker}
                     mode="dropdown"
-                >
-                    <Picker.Item label="Select category" value="" />
-                    {categories.map((cat, i) => (
-                        <Picker.Item label={cat} value={cat} key={i} />
-                    ))}
-                </Picker>
+            >
+                <Picker.Item label="Select category" value="" />
+                {categories.map((cat, i) => (
+                    <Picker.Item label={cat} value={cat} key={i} />
+                ))}
+            </Picker>
             </View>
 
             {selectedCategory && (

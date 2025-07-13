@@ -1,4 +1,5 @@
 import { initializeApp } from 'firebase/app';
+import { getDatabase } from 'firebase/database';
 import {
     initializeAuth,
     getReactNativePersistence
@@ -18,9 +19,10 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+export const database = getDatabase(app);
 
 // Use persistent auth for React Native
-const auth = initializeAuth(app, {
+export const auth = initializeAuth(app, {
     persistence: getReactNativePersistence(AsyncStorage)
 });
 
