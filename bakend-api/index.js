@@ -1,24 +1,48 @@
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
-const dotenv = require('dotenv');
+const config = require('./config/environment');
+const errorHandler = require('./middleware/errorHandler');
+const { validateImageUpload } = require('./middleware/validation');
 const { getGeminiResponse } = require('./utils/gemini');
 const pathOptimizer = require('./routes/pathOptimizer');
 const alternativeSearch = require('./routes/alternativeSearch');
 
-// Load environment variables from .env
-dotenv.config();
-
 const app = express();
-app.use(cors());
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// 🔁 Multer for handling image uploads in memory
-const upload = multer({ storage: multer.memoryStorage() });
+// Middleware
+app.use(cors());
+app.use(express.json({ limit: config.maxFileSize }));
+app.use(express.urlencoded({ limit: config.maxFileSize, extended: true }));
+
+// Multer configuration for file uploads
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+    files: 5 // Max 5 files
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (allowedMimeTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error(`Invalid file type: ${file.originalname}`), false);
+    }
+  }
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    environment: config.nodeEnv 
+  });
+});
 
 // 🔥 GEMINI Direct Endpoint
-app.post('/api/suggest-direct', upload.array('files'), async (req, res) => {
+app.post('/api/suggest-direct', upload.array('files'), validateImageUpload, async (req, res, next) => {
     try {
         const files = req.files;
         const category = req.body.category || '';
@@ -44,10 +68,6 @@ End with a clear recommendation: "👉 Best Pick: [Product Name] - [Brief reason
 
 Make your response helpful, detailed, and easy to understand for grocery shoppers.
         `;
-
-        if (!files || files.length === 0) {
-            return res.status(400).json({ error: 'No image files uploaded.' });
-        }
 
         // Hardcoded response for demo
         const hardcodedResponse = `
@@ -92,15 +112,38 @@ Storage Recommendations:
 
         res.json({ recommendation: hardcodedResponse });
     } catch (err) {
-        console.error('Gemini Suggest Error:', err);
-        res.status(500).json({ error: 'Failed to generate recommendation.' });
+        next(err);
     }
 });
 
+// API Routes
 app.use('/api/path', pathOptimizer);
 app.use('/api/alternatives', alternativeSearch);
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-    console.log(`✅ Server running on http://localhost:${PORT}`);
+// 404 handler - use proper catch-all pattern for Express 4.x
+app.use('*', (req, res) => {
+  res.status(404).json({ 
+    error: 'Route not found',
+    path: req.originalUrl 
+  });
+});
+
+// Error handling middleware (must be last)
+app.use(errorHandler);
+
+// Start server
+app.listen(config.port, () => {
+    console.log(`✅ Server running on http://localhost:${config.port}`);
+    console.log(`🌍 Environment: ${config.nodeEnv}`);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('🛑 SIGTERM received, shutting down gracefully');
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  console.log('🛑 SIGINT received, shutting down gracefully');
+  process.exit(0);
 });

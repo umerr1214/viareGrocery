@@ -1,13 +1,22 @@
 {
-  "name": "mobile-app",
+  "name": "shahi-tukre-mobile",
   "version": "1.0.0",
+  "description": "Mobile app for Shahi Tukre grocery shopping assistant",
   "main": "index.js",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "echo \"No linter configured\" && exit 0",
+    "build:android": "expo build:android",
+    "build:ios": "expo build:ios",
+    "eject": "expo eject"
   },
+  "keywords": ["grocery", "shopping", "mobile", "react-native", "expo"],
+  "author": "Shahi Tukre Team",
+  "license": "ISC",
   "dependencies": {
     "@expo/metro-runtime": "~5.0.4",
     "@react-native-async-storage/async-storage": "2.1.2",
@@ -29,6 +38,9 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   },
   "private": true
 }

@@ -1,0 +1,301 @@
+product_id,product_name,brand,category,aisle_no
+3001,Zeera,National,Herbs & spices,1
+3002,Haldi,Shan,Herbs & spices,1
+3003,Laal Mirch,Mehran,Herbs & spices,1
+3004,Basmati Rice,Guard,grains & pulses,2
+3005,Masoor Dal,Fauji,grains & pulses,2
+3006,Chana Dal,Sabroso,grains & pulses,2
+3007,Cornflakes,Kellogg's,Breakfast,3
+3008,Paratha,Dawn,Breakfast,3
+3009,Bread,Bake Parlour,Breakfast,3
+3010,White Sugar,Sufi,Sugar & sweeteners,4
+3011,Brown Sugar,Shakarganj,Sugar & sweeteners,4
+3012,Honey,Marhaba,Sugar & sweeteners,4
+3013,Macaroni,Knorr,Pasta & noodles,5
+3014,Spaghetti,Young's,Pasta & noodles,5
+3015,Instant Noodles,Maggi,Pasta & noodles,5
+3016,Shampoo,Sunsilk,Personal Care,6
+3017,Toothpaste,Colgate,Personal Care,6
+3018,Soap,Lux,Personal Care,6
+3019,Floor Cleaner,Dettol,Household cleaning,7
+3020,Toilet Cleaner,Harpic,Household cleaning,7
+3021,Dish Soap,Max,Household cleaning,7
+3022,Tomato Ketchup,Mitchell's,Sauces & Chutneys,8
+3023,Imli Chutney,National,Sauces & Chutneys,8
+3024,Green Chutney,Shan,Sauces & Chutneys,8
+3025,Cooking Oil,Dalda,oils & fats,9
+3026,Ghee,Habib,oils & fats,9
+3027,Olive Oil,Sufi,oils & fats,9
+3028,Tea Bags,Lipton,Tea & Coffee,10
+3029,Green Tea,Tapal,Tea & Coffee,10
+3030,Instant Coffee,Nescafe,Tea & Coffee,10
+3031,Chips,Lays,Snacks,11
+3032,Nimco,Kolson,Snacks,11
+3033,Chocolate,Candyland,Snacks,11
+3034,Dog Food,Pedigree,Pet food,12
+3035,Cat Food,Whiskas,Pet food,12
+3036,Bird Seeds,Generic,Pet food,12
+3037,Diapers,Canbebe,Baby Care,13
+3038,Baby Lotion,Johnson's,Baby Care,13
+3039,Baby Shampoo,Pampers,Baby Care,13
+3040,Toilet Paper,Rose Petal,Paper products,14
+3041,Tissue Box,Premier,Paper products,14
+3042,Paper Towels,Fine,Paper products,14
+3043,Apple,Local,Fruits & Vegetables,15
+3044,Potato,Local,Fruits & Vegetables,15
+3045,Carrot,Local,Fruits & Vegetables,15
+3046,Bun,Bread & Beyond,Bakery,16
+3047,Cake,Layers,Bakery,16
+3048,Croissant,Delizia,Bakery,16
+3049,Chicken,K&N's,Meat & poultry,17
+3050,Mutton,Local,Meat & poultry,17
+3051,Beef,Local,Meat & poultry,17
+3052,Shrimp,Local,Sea food,18
+3053,Rohu Fish,Local,Sea food,18
+3054,Crab,Local,Sea food,18
+3055,Frozen Paratha,Dawn,Frozen food,19
+3056,Frozen Nuggets,K&N's,Frozen food,19
+3057,Frozen Fries,McCain,Frozen food,19
+3058,Cola,Pepsi,Beverages,20
+3059,Juice,Nestle Fruita Vitals,Beverages,20
+3060,Energy Drink,Sting,Beverages,20
+3061,Zeera 1,National,Herbs & spices,1
+3062,Haldi 1,Shan,Herbs & spices,1
+3063,Laal Mirch 1,Mehran,Herbs & spices,1
+3064,Basmati Rice 1,Guard,grains & pulses,2
+3065,Masoor Dal 1,Fauji,grains & pulses,2
+3066,Chana Dal 1,Sabroso,grains & pulses,2
+3067,Cornflakes 1,Kellogg's,Breakfast,3
+3068,Paratha 1,Dawn,Breakfast,3
+3069,Bread 1,Bake Parlour,Breakfast,3
+3070,White Sugar 1,Sufi,Sugar & sweeteners,4
+3071,Brown Sugar 1,Shakarganj,Sugar & sweeteners,4
+3072,Honey 1,Marhaba,Sugar & sweeteners,4
+3073,Macaroni 1,Knorr,Pasta & noodles,5
+3074,Spaghetti 1,Young's,Pasta & noodles,5
+3075,Instant Noodles 1,Maggi,Pasta & noodles,5
+3076,Shampoo 1,Sunsilk,Personal Care,6
+3077,Toothpaste 1,Colgate,Personal Care,6
+3078,Soap 1,Lux,Personal Care,6
+3079,Floor Cleaner 1,Dettol,Household cleaning,7
+3080,Toilet Cleaner 1,Harpic,Household cleaning,7
+3081,Dish Soap 1,Max,Household cleaning,7
+3082,Tomato Ketchup 1,Mitchell's,Sauces & Chutneys,8
+3083,Imli Chutney 1,National,Sauces & Chutneys,8
+3084,Green Chutney 1,Shan,Sauces & Chutneys,8
+3085,Cooking Oil 1,Dalda,oils & fats,9
+3086,Ghee 1,Habib,oils & fats,9
+3087,Olive Oil 1,Sufi,oils & fats,9
+3088,Tea Bags 1,Lipton,Tea & Coffee,10
+3089,Green Tea 1,Tapal,Tea & Coffee,10
+3090,Instant Coffee 1,Nescafe,Tea & Coffee,10
+3091,Chips 1,Lays,Snacks,11
+3092,Nimco 1,Kolson,Snacks,11
+3093,Chocolate 1,Candyland,Snacks,11
+3094,Dog Food 1,Pedigree,Pet food,12
+3095,Cat Food 1,Whiskas,Pet food,12
+3096,Bird Seeds 1,Generic,Pet food,12
+3097,Diapers 1,Canbebe,Baby Care,13
+3098,Baby Lotion 1,Johnson's,Baby Care,13
+3099,Baby Shampoo 1,Pampers,Baby Care,13
+3100,Toilet Paper 1,Rose Petal,Paper products,14
+3101,Tissue Box 1,Premier,Paper products,14
+3102,Paper Towels 1,Fine,Paper products,14
+3103,Apple 1,Local,Fruits & Vegetables,15
+3104,Potato 1,Local,Fruits & Vegetables,15
+3105,Carrot 1,Local,Fruits & Vegetables,15
+3106,Bun 1,Bread & Beyond,Bakery,16
+3107,Cake 1,Layers,Bakery,16
+3108,Croissant 1,Delizia,Bakery,16
+3109,Chicken 1,K&N's,Meat & poultry,17
+3110,Mutton 1,Local,Meat & poultry,17
+3111,Beef 1,Local,Meat & poultry,17
+3112,Shrimp 1,Local,Sea food,18
+3113,Rohu Fish 1,Local,Sea food,18
+3114,Crab 1,Local,Sea food,18
+3115,Frozen Paratha 1,Dawn,Frozen food,19
+3116,Frozen Nuggets 1,K&N's,Frozen food,19
+3117,Frozen Fries 1,McCain,Frozen food,19
+3118,Cola 1,Pepsi,Beverages,20
+3119,Juice 1,Nestle Fruita Vitals,Beverages,20
+3120,Energy Drink 1,Sting,Beverages,20
+3121,Zeera 2,National,Herbs & spices,1
+3122,Haldi 2,Shan,Herbs & spices,1
+3123,Laal Mirch 2,Mehran,Herbs & spices,1
+3124,Basmati Rice 2,Guard,grains & pulses,2
+3125,Masoor Dal 2,Fauji,grains & pulses,2
+3126,Chana Dal 2,Sabroso,grains & pulses,2
+3127,Cornflakes 2,Kellogg's,Breakfast,3
+3128,Paratha 2,Dawn,Breakfast,3
+3129,Bread 2,Bake Parlour,Breakfast,3
+3130,White Sugar 2,Sufi,Sugar & sweeteners,4
+3131,Brown Sugar 2,Shakarganj,Sugar & sweeteners,4
+3132,Honey 2,Marhaba,Sugar & sweeteners,4
+3133,Macaroni 2,Knorr,Pasta & noodles,5
+3134,Spaghetti 2,Young's,Pasta & noodles,5
+3135,Instant Noodles 2,Maggi,Pasta & noodles,5
+3136,Shampoo 2,Sunsilk,Personal Care,6
+3137,Toothpaste 2,Colgate,Personal Care,6
+3138,Soap 2,Lux,Personal Care,6
+3139,Floor Cleaner 2,Dettol,Household cleaning,7
+3140,Toilet Cleaner 2,Harpic,Household cleaning,7
+3141,Dish Soap 2,Max,Household cleaning,7
+3142,Tomato Ketchup 2,Mitchell's,Sauces & Chutneys,8
+3143,Imli Chutney 2,National,Sauces & Chutneys,8
+3144,Green Chutney 2,Shan,Sauces & Chutneys,8
+3145,Cooking Oil 2,Dalda,oils & fats,9
+3146,Ghee 2,Habib,oils & fats,9
+3147,Olive Oil 2,Sufi,oils & fats,9
+3148,Tea Bags 2,Lipton,Tea & Coffee,10
+3149,Green Tea 2,Tapal,Tea & Coffee,10
+3150,Instant Coffee 2,Nescafe,Tea & Coffee,10
+3151,Chips 2,Lays,Snacks,11
+3152,Nimco 2,Kolson,Snacks,11
+3153,Chocolate 2,Candyland,Snacks,11
+3154,Dog Food 2,Pedigree,Pet food,12
+3155,Cat Food 2,Whiskas,Pet food,12
+3156,Bird Seeds 2,Generic,Pet food,12
+3157,Diapers 2,Canbebe,Baby Care,13
+3158,Baby Lotion 2,Johnson's,Baby Care,13
+3159,Baby Shampoo 2,Pampers,Baby Care,13
+3160,Toilet Paper 2,Rose Petal,Paper products,14
+3161,Tissue Box 2,Premier,Paper products,14
+3162,Paper Towels 2,Fine,Paper products,14
+3163,Apple 2,Local,Fruits & Vegetables,15
+3164,Potato 2,Local,Fruits & Vegetables,15
+3165,Carrot 2,Local,Fruits & Vegetables,15
+3166,Bun 2,Bread & Beyond,Bakery,16
+3167,Cake 2,Layers,Bakery,16
+3168,Croissant 2,Delizia,Bakery,16
+3169,Chicken 2,K&N's,Meat & poultry,17
+3170,Mutton 2,Local,Meat & poultry,17
+3171,Beef 2,Local,Meat & poultry,17
+3172,Shrimp 2,Local,Sea food,18
+3173,Rohu Fish 2,Local,Sea food,18
+3174,Crab 2,Local,Sea food,18
+3175,Frozen Paratha 2,Dawn,Frozen food,19
+3176,Frozen Nuggets 2,K&N's,Frozen food,19
+3177,Frozen Fries 2,McCain,Frozen food,19
+3178,Cola 2,Pepsi,Beverages,20
+3179,Juice 2,Nestle Fruita Vitals,Beverages,20
+3180,Energy Drink 2,Sting,Beverages,20
+3181,Zeera 3,National,Herbs & spices,1
+3182,Haldi 3,Shan,Herbs & spices,1
+3183,Laal Mirch 3,Mehran,Herbs & spices,1
+3184,Basmati Rice 3,Guard,grains & pulses,2
+3185,Masoor Dal 3,Fauji,grains & pulses,2
+3186,Chana Dal 3,Sabroso,grains & pulses,2
+3187,Cornflakes 3,Kellogg's,Breakfast,3
+3188,Paratha 3,Dawn,Breakfast,3
+3189,Bread 3,Bake Parlour,Breakfast,3
+3190,White Sugar 3,Sufi,Sugar & sweeteners,4
+3191,Brown Sugar 3,Shakarganj,Sugar & sweeteners,4
+3192,Honey 3,Marhaba,Sugar & sweeteners,4
+3193,Macaroni 3,Knorr,Pasta & noodles,5
+3194,Spaghetti 3,Young's,Pasta & noodles,5
+3195,Instant Noodles 3,Maggi,Pasta & noodles,5
+3196,Shampoo 3,Sunsilk,Personal Care,6
+3197,Toothpaste 3,Colgate,Personal Care,6
+3198,Soap 3,Lux,Personal Care,6
+3199,Floor Cleaner 3,Dettol,Household cleaning,7
+3200,Toilet Cleaner 3,Harpic,Household cleaning,7
+3201,Dish Soap 3,Max,Household cleaning,7
+3202,Tomato Ketchup 3,Mitchell's,Sauces & Chutneys,8
+3203,Imli Chutney 3,National,Sauces & Chutneys,8
+3204,Green Chutney 3,Shan,Sauces & Chutneys,8
+3205,Cooking Oil 3,Dalda,oils & fats,9
+3206,Ghee 3,Habib,oils & fats,9
+3207,Olive Oil 3,Sufi,oils & fats,9
+3208,Tea Bags 3,Lipton,Tea & Coffee,10
+3209,Green Tea 3,Tapal,Tea & Coffee,10
+3210,Instant Coffee 3,Nescafe,Tea & Coffee,10
+3211,Chips 3,Lays,Snacks,11
+3212,Nimco 3,Kolson,Snacks,11
+3213,Chocolate 3,Candyland,Snacks,11
+3214,Dog Food 3,Pedigree,Pet food,12
+3215,Cat Food 3,Whiskas,Pet food,12
+3216,Bird Seeds 3,Generic,Pet food,12
+3217,Diapers 3,Canbebe,Baby Care,13
+3218,Baby Lotion 3,Johnson's,Baby Care,13
+3219,Baby Shampoo 3,Pampers,Baby Care,13
+3220,Toilet Paper 3,Rose Petal,Paper products,14
+3221,Tissue Box 3,Premier,Paper products,14
+3222,Paper Towels 3,Fine,Paper products,14
+3223,Apple 3,Local,Fruits & Vegetables,15
+3224,Potato 3,Local,Fruits & Vegetables,15
+3225,Carrot 3,Local,Fruits & Vegetables,15
+3226,Bun 3,Bread & Beyond,Bakery,16
+3227,Cake 3,Layers,Bakery,16
+3228,Croissant 3,Delizia,Bakery,16
+3229,Chicken 3,K&N's,Meat & poultry,17
+3230,Mutton 3,Local,Meat & poultry,17
+3231,Beef 3,Local,Meat & poultry,17
+3232,Shrimp 3,Local,Sea food,18
+3233,Rohu Fish 3,Local,Sea food,18
+3234,Crab 3,Local,Sea food,18
+3235,Frozen Paratha 3,Dawn,Frozen food,19
+3236,Frozen Nuggets 3,K&N's,Frozen food,19
+3237,Frozen Fries 3,McCain,Frozen food,19
+3238,Cola 3,Pepsi,Beverages,20
+3239,Juice 3,Nestle Fruita Vitals,Beverages,20
+3240,Energy Drink 3,Sting,Beverages,20
+3241,Zeera 4,National,Herbs & spices,1
+3242,Haldi 4,Shan,Herbs & spices,1
+3243,Laal Mirch 4,Mehran,Herbs & spices,1
+3244,Basmati Rice 4,Guard,grains & pulses,2
+3245,Masoor Dal 4,Fauji,grains & pulses,2
+3246,Chana Dal 4,Sabroso,grains & pulses,2
+3247,Cornflakes 4,Kellogg's,Breakfast,3
+3248,Paratha 4,Dawn,Breakfast,3
+3249,Bread 4,Bake Parlour,Breakfast,3
+3250,White Sugar 4,Sufi,Sugar & sweeteners,4
+3251,Brown Sugar 4,Shakarganj,Sugar & sweeteners,4
+3252,Honey 4,Marhaba,Sugar & sweeteners,4
+3253,Macaroni 4,Knorr,Pasta & noodles,5
+3254,Spaghetti 4,Young's,Pasta & noodles,5
+3255,Instant Noodles 4,Maggi,Pasta & noodles,5
+3256,Shampoo 4,Sunsilk,Personal Care,6
+3257,Toothpaste 4,Colgate,Personal Care,6
+3258,Soap 4,Lux,Personal Care,6
+3259,Floor Cleaner 4,Dettol,Household cleaning,7
+3260,Toilet Cleaner 4,Harpic,Household cleaning,7
+3261,Dish Soap 4,Max,Household cleaning,7
+3262,Tomato Ketchup 4,Mitchell's,Sauces & Chutneys,8
+3263,Imli Chutney 4,National,Sauces & Chutneys,8
+3264,Green Chutney 4,Shan,Sauces & Chutneys,8
+3265,Cooking Oil 4,Dalda,oils & fats,9
+3266,Ghee 4,Habib,oils & fats,9
+3267,Olive Oil 4,Sufi,oils & fats,9
+3268,Tea Bags 4,Lipton,Tea & Coffee,10
+3269,Green Tea 4,Tapal,Tea & Coffee,10
+3270,Instant Coffee 4,Nescafe,Tea & Coffee,10
+3271,Chips 4,Lays,Snacks,11
+3272,Nimco 4,Kolson,Snacks,11
+3273,Chocolate 4,Candyland,Snacks,11
+3274,Dog Food 4,Pedigree,Pet food,12
+3275,Cat Food 4,Whiskas,Pet food,12
+3276,Bird Seeds 4,Generic,Pet food,12
+3277,Diapers 4,Canbebe,Baby Care,13
+3278,Baby Lotion 4,Johnson's,Baby Care,13
+3279,Baby Shampoo 4,Pampers,Baby Care,13
+3280,Toilet Paper 4,Rose Petal,Paper products,14
+3281,Tissue Box 4,Premier,Paper products,14
+3282,Paper Towels 4,Fine,Paper products,14
+3283,Apple 4,Local,Fruits & Vegetables,15
+3284,Potato 4,Local,Fruits & Vegetables,15
+3285,Carrot 4,Local,Fruits & Vegetables,15
+3286,Bun 4,Bread & Beyond,Bakery,16
+3287,Cake 4,Layers,Bakery,16
+3288,Croissant 4,Delizia,Bakery,16
+3289,Chicken 4,K&N's,Meat & poultry,17
+3290,Mutton 4,Local,Meat & poultry,17
+3291,Beef 4,Local,Meat & poultry,17
+3292,Shrimp 4,Local,Sea food,18
+3293,Rohu Fish 4,Local,Sea food,18
+3294,Crab 4,Local,Sea food,18
+3295,Frozen Paratha 4,Dawn,Frozen food,19
+3296,Frozen Nuggets 4,K&N's,Frozen food,19
+3297,Frozen Fries 4,McCain,Frozen food,19
+3298,Cola 4,Pepsi,Beverages,20
+3299,Juice 4,Nestle Fruita Vitals,Beverages,20
+3300,Energy Drink 4,Sting,Beverages,20

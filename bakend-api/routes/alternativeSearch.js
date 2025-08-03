@@ -1,28 +1,19 @@
 const express = require('express');
 const fetch = require('node-fetch');
 const router = express.Router();
+const config = require('../config/environment');
+const { validateAlternativeSearch } = require('../middleware/validation');
 
-// Gemini API configuration
-const GEMINI_API_KEY = 'AIzaSyBtn9Bx3aKShyQfJlqagp7tgxDPTgovHq0';
-const GEMINI_TEXT_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
-const GEMINI_VISION_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
-
-router.post('/', async (req, res) => {
+router.post('/', validateAlternativeSearch, async (req, res, next) => {
     try {
         const { image, productName, category, brand } = req.body;
         
-        if (!image && (!productName || !category || !brand)) {
-            return res.status(400).json({ 
-                error: 'Either image or all of product name, category, and brand are required' 
-            });
-        }
-
         let prompt = '';
         let requestBody = {};
         let apiUrl = '';
 
         if (image) {
-            apiUrl = GEMINI_VISION_API_URL;
+            apiUrl = config.geminiVisionApiUrl;
             
             prompt = `Analyze this product image and find 3-4 best alternative products from different brands. 
             Consider factors like quality, nutritional value, and similar benefits.
@@ -62,7 +53,7 @@ router.post('/', async (req, res) => {
                 }]
             };
         } else {
-            apiUrl = GEMINI_TEXT_API_URL;
+            apiUrl = config.geminiTextApiUrl;
             
             prompt = `Find 3-4 best alternative products for "${productName}" from different brands in the "${category}" category. 
             The user currently uses "${brand}" brand, so recommend alternatives from other brands.
@@ -96,7 +87,7 @@ router.post('/', async (req, res) => {
             };
         }
         
-        const response = await fetch(`${apiUrl}?key=${GEMINI_API_KEY}`, {
+        const response = await fetch(`${apiUrl}?key=${config.geminiApiKey}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -122,11 +113,7 @@ router.post('/', async (req, res) => {
         }
 
     } catch (error) {
-        console.error('Error in alternative search:', error);
-        res.status(500).json({ 
-            error: 'Failed to get alternatives', 
-            details: error.message 
-        });
+        next(error);
     }
 });
 
