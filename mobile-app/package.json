@@ -14,30 +14,39 @@
     "build:ios": "expo build:ios",
     "eject": "expo eject"
   },
-  "keywords": ["grocery", "shopping", "mobile", "react-native", "expo"],
+  "keywords": [
+    "grocery",
+    "shopping",
+    "mobile",
+    "react-native",
+    "expo"
+  ],
   "author": "Shahi Tukre Team",
   "license": "ISC",
   "dependencies": {
-    "@expo/metro-runtime": "~5.0.4",
-    "@react-native-async-storage/async-storage": "2.1.2",
-    "@react-native-picker/picker": "^2.11.1",
+    "@expo/metro-runtime": "~57.0.14",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-native-picker/picker": "2.11.4",
     "@react-navigation/native": "^7.1.14",
     "@react-navigation/native-stack": "^7.3.21",
-    "expo": "~53.0.17",
-    "expo-clipboard": "~7.1.5",
-    "expo-file-system": "~18.1.11",
-    "expo-image-picker": "~16.1.4",
-    "expo-status-bar": "~2.2.3",
+    "expo": "^57.0.18",
+    "expo-clipboard": "~57.0.1",
+    "expo-file-system": "~57.0.6",
+    "expo-image-picker": "~57.0.14",
+    "expo-splash-screen": "~57.0.8",
+    "expo-status-bar": "~57.0.1",
     "firebase": "^11.10.0",
-    "react": "19.0.0",
-    "react-dom": "19.0.0",
-    "react-native": "0.79.5",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "0.86.3",
     "react-native-image-pan-zoom": "^2.1.12",
     "react-native-linear-gradient": "^2.8.3",
-    "react-native-web": "^0.20.0"
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "~4.26.0",
+    "react-native-web": "^0.21.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0"
+    "@babel/core": "^7.29.0"
   },
   "engines": {
     "node": ">=16.0.0"
