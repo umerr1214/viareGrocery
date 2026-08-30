@@ -1,4 +1,4 @@
-# Viare Grocery - AI-Powered In-Store Shopping Assistant
+cdx sa   A\Z-*98# Viare Grocery - AI-Powered In-Store Shopping Assistant
 
 A comprehensive In-store grocery shopping application with AI-powered recommendations, store path optimization, and intelligent product analysis.
 

@@ -8,6 +8,7 @@
     "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "seed": "node scripts/seedAisleMap.js",
+    "check-seed": "node scripts/checkSeedData.js",
     "lint": "echo \"No linter configured\" && exit 0"
   },
   "keywords": ["grocery", "shopping", "ai", "path-optimization", "product-recommendations"],

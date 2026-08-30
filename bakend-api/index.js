@@ -69,48 +69,9 @@ End with a clear recommendation: "👉 Best Pick: [Product Name] - [Brief reason
 Make your response helpful, detailed, and easy to understand for grocery shoppers.
         `;
 
-        // Hardcoded response for demo
-        const hardcodedResponse = `
-🍃 Product Analysis: Tea & Coffee Category
+        const recommendation = await getGeminiResponse({ images: files, prompt, category });
 
-Olpers Milk (1L)
-- Product: Full cream milk by Olpers
-- Quality Rating: ⭐⭐⭐⭐⭐ (5/5 stars)
-- Price Estimate: ~Rs. 180-200
-- Key Features:
-  • Rich, creamy texture perfect for tea/coffee
-  • High calcium content (120mg per 100ml)
-  • Pasteurized and homogenized for safety
-  • 3.5% fat content for rich taste
-  • Long shelf life when refrigerated
-
-Quality Assessment:
-✅ Fresh packaging with no leaks
-✅ Proper refrigeration maintained
-✅ Clear expiry date visible
-✅ No signs of spoilage
-
-Value Comparison:
-• Olpers Milk: Premium quality, trusted brand
-• Alternative: Local dairy milk (cheaper but less consistent quality)
-• Best for: Tea, coffee, cooking, and direct consumption
-
-Health Considerations:
-• Rich in calcium and vitamin D
-• Good source of protein (3.2g per 100ml)
-• Contains essential vitamins A, B12, and D
-• Suitable for all age groups
-
-Storage Recommendations:
-• Keep refrigerated at 2-4°C
-• Consume within 7 days after opening
-• Store in original container
-• Avoid exposure to direct sunlight
-
-👉 **Best Pick: Olpers Milk** - Premium quality, consistent taste, perfect for tea and coffee preparation. The rich creaminess enhances the flavor of your beverages while providing essential nutrients.
-        `;
-
-        res.json({ recommendation: hardcodedResponse });
+        res.json({ recommendation });
     } catch (err) {
         next(err);
     }
