@@ -115,7 +115,7 @@ const AlternativeScreen = ({ navigation }) => {
 
     const pickImage = async () => {
         const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaType.Images,
+            mediaTypes: 'images',
             allowsMultipleSelection: false,
             quality: 0.8,
             base64: true,

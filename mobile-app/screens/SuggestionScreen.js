@@ -83,15 +83,26 @@ const SuggestScreen = ({ navigation }) => {
     };
 
     const pickImage = async () => {
-        let result = await ImagePicker.launchImageLibraryAsync({
-            allowsMultipleSelection: true,
-            mediaTypes: [ImagePicker.MediaType.Images],
-            quality: 1,
-        });
+        try {
+            const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (!permission.granted) {
+                alert('Media library permission is required to upload images. Please grant it in your device settings.');
+                return;
+            }
 
-        if (!result.canceled && result.assets) {
-            const selected = result.assets.map(asset => asset.uri);
-            setImages(prev => [...prev, ...selected]);
+            const result = await ImagePicker.launchImageLibraryAsync({
+                allowsMultipleSelection: true,
+                mediaTypes: ['images'],
+                quality: 1,
+            });
+
+            if (!result.canceled && result.assets) {
+                const selected = result.assets.map(asset => asset.uri);
+                setImages(prev => [...prev, ...selected]);
+            }
+        } catch (error) {
+            console.error('Image picker error:', error);
+            alert('Could not open the image picker: ' + (error?.message || 'unknown error'));
         }
     };
 
