@@ -26,7 +26,7 @@ const PathScreen = ({ route, navigation }) => {
     useEffect(() => {
         const fetchPath = async () => {
             try {
-                const response = await fetch('http://192.168.18.95:3001/api/path', {
+                const response = await fetch('http://192.168.18.140:3000/api/path', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(shoppingData),

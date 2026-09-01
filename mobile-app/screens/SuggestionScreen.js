@@ -123,10 +123,10 @@ const SuggestScreen = ({ navigation }) => {
             console.log('Sending request with:', {
                 imagesCount: images.length,
                 category: selectedCategory,
-                endpoint: 'http://192.168.18.95:3001/api/suggest-direct'
+                endpoint: 'http://192.168.18.140:3000/api/suggest-direct'
             });
 
-            const response = await fetch('http://192.168.18.95:3001/api/suggest-direct', {
+            const response = await fetch('http://192.168.18.140:3000/api/suggest-direct', {
                 method: 'POST',
                 body: formData,
                 headers: {

@@ -152,7 +152,7 @@ const AlternativeScreen = ({ navigation }) => {
                 brand: selectedBrand,
             };
 
-            const response = await fetch('http://192.168.18.95:3001/api/alternatives', {
+            const response = await fetch('http://192.168.18.140:3000/api/alternatives', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

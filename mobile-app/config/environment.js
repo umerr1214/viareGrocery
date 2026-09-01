@@ -11,7 +11,7 @@ const ENV = {
     firebaseMeasurementId: "G-56L4ZMM981",
     
     // Backend API Configuration
-    apiBaseUrl: "http://localhost:3001",
+    apiBaseUrl: "http://192.168.18.140:3000",
     apiTimeout: 10000,
     
     // App Configuration
