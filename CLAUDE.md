@@ -22,6 +22,7 @@ npm run seed      # node scripts/seedAisleMap.js — seeds Firestore aisle map
 ```
 No test suite or linter is configured (`npm test` / `npm run lint` are stubs that no-op). There is no single-test command.
 
+
 Requires a `.env` in `bakend-api/` with `GEMINI_API_KEY` (required — the process exits at startup if missing), plus `FIREBASE_PROJECT_ID`, `FIREBASE_PRIVATE_KEY`, `FIREBASE_CLIENT_EMAIL` for Firestore access. Server listens on `PORT` (default 3001). **Currently the backend is run on port 3000** (set via `PORT=3000` in `.env`); all mobile-app endpoints are configured to match.
 
 ### Mobile app (`mobile-app/`)

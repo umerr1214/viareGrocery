@@ -17,8 +17,8 @@ const config = {
   firebaseClientEmail: process.env.FIREBASE_CLIENT_EMAIL,
   
   // API URLs
-  geminiTextApiUrl: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
-  geminiVisionApiUrl: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
+  geminiTextApiUrl: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
+  geminiVisionApiUrl: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
   
   // File upload limits
   maxFileSize: process.env.MAX_FILE_SIZE || '50mb',

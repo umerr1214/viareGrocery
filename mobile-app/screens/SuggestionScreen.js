@@ -85,7 +85,7 @@ const SuggestScreen = ({ navigation }) => {
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
             allowsMultipleSelection: true,
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: [ImagePicker.MediaType.Images],
             quality: 1,
         });
 
