@@ -19,17 +19,37 @@ router.post('/', async (req, res) => {
       return res.status(404).json({ error: 'Store map not found' });
     }
 
-    const aisleMap = doc.data().productToAisleMap;
+    const aisleMap = doc.data().productToAisleMap || {};
     console.log('Aisle map:', aisleMap);
 
-    const aisles = products
-      .map(p => aisleMap[p.trim()])
-      .filter(Boolean);
-    
-    console.log('Mapped aisles:', aisles);
-    
+    // Build a case-insensitive, trimmed lookup: normalized product name -> aisle
+    const normalizedAisleMap = {};
+    for (const [product, aisle] of Object.entries(aisleMap)) {
+      normalizedAisleMap[product.trim().toLowerCase()] = aisle;
+    }
+
+    // Match each requested product, remembering the ones we could not find
+    const matched = [];   // { product: nameAsTyped, aisle }
+    const notFound = [];  // nameAsTyped
+    for (const product of products) {
+      const name = (typeof product === 'string' ? product : String(product ?? '')).trim();
+      const aisle = normalizedAisleMap[name.toLowerCase()];
+      if (aisle) {
+        matched.push({ product: name, aisle });
+      } else {
+        notFound.push(name);
+      }
+    }
+
+    // De-duplicate aisles while preserving first-seen order
+    const aisles = [...new Set(matched.map(m => m.aisle))];
+
+    console.log('Matched products:', matched);
+    console.log('Products not found:', notFound);
+    console.log('Mapped aisles (deduped):', aisles);
+
     if (aisles.length === 0) {
-      return res.status(400).json({ error: 'No valid products found in the list' });
+      return res.status(400).json({ error: 'No valid products found in the list', notFound });
     }
 
     console.log('Store graph:', storeGraph);
@@ -46,9 +66,9 @@ router.post('/', async (req, res) => {
       if (idx === 0) return 'Start at Entrance';
       if (idx === path.length - 1) return 'Proceed to Counter';
 
-      // Find which products from the user's request are in this aisle
-      const productsInThisAisle = products.filter(product => aisleMap[product.trim()] === node);
-      
+      // Products the user asked for that live in this aisle (names preserved as typed)
+      const productsInThisAisle = matched.filter(m => m.aisle === node).map(m => m.product);
+
       if (productsInThisAisle.length > 0) {
         return `Go to ${node} – Pick ${productsInThisAisle.join(', ')}`;
       } else {
@@ -57,7 +77,7 @@ router.post('/', async (req, res) => {
     });
 
     console.log('Instructions:', instructions);
-    res.json({ path, instructions });
+    res.json({ path, instructions, notFound });
   } catch (err) {
     console.error('Error in pathOptimizer:', err);
     res.status(500).json({ error: 'Internal error', details: err.message });

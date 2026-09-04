@@ -14,10 +14,12 @@ import {
     Dimensions,
 } from 'react-native';
 import ImageZoom from 'react-native-image-pan-zoom';
+import config from '../config/environment';
 
 const PathScreen = ({ route, navigation }) => {
     const { shoppingData } = route.params;
     const [instructions, setInstructions] = useState([]);
+    const [notFound, setNotFound] = useState([]);
     const [loading, setLoading] = useState(true);
     const [menuOpen, setMenuOpen] = useState(false);
     const [mapModalVisible, setMapModalVisible] = useState(false);
@@ -26,14 +28,25 @@ const PathScreen = ({ route, navigation }) => {
     useEffect(() => {
         const fetchPath = async () => {
             try {
-                const response = await fetch('http://192.168.18.140:3000/api/path', {
+                const response = await fetch(`${config.apiBaseUrl}/api/path`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(shoppingData),
                 });
 
-                const data = await response.json();
-                setInstructions(data.instructions);
+                const data = await response.json().catch(() => ({}));
+
+                // Surface any products the store could not locate (present on 200 and 400)
+                setNotFound(data.notFound || []);
+
+                if (!response.ok) {
+                    // fetch does not reject on HTTP error status, so handle it explicitly
+                    setInstructions([]);
+                    Alert.alert('No path found', data.error || `Request failed (${response.status}).`);
+                    return;
+                }
+
+                setInstructions(data.instructions || []);
             } catch (err) {
                 console.error(err);
                 Alert.alert("Error", "Failed to fetch path. Check server or IP.");
@@ -94,6 +107,14 @@ const PathScreen = ({ route, navigation }) => {
                     </View>
                 </TouchableOpacity>
             </View>
+
+            {notFound.length > 0 && (
+                <View style={styles.notFoundBox}>
+                    <Text style={styles.notFoundText}>
+                        Not available in this store: {notFound.join(', ')}
+                    </Text>
+                </View>
+            )}
 
             {loading ? (
                 <ActivityIndicator size="large" color="#14b8a6" />
@@ -173,6 +194,19 @@ const styles = StyleSheet.create({
         fontSize: 16,
         paddingVertical: 6,
         color: '#111827',
+    },
+    notFoundBox: {
+        backgroundColor: '#fef2f2',
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#fecaca',
+        paddingVertical: 10,
+        paddingHorizontal: 12,
+        marginBottom: 12,
+    },
+    notFoundText: {
+        fontSize: 14,
+        color: '#b91c1c',
     },
     menuButton: {
         position: 'absolute',
