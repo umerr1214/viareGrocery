@@ -16,10 +16,79 @@ import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
 import { db } from '../firebase/firebaseConfig';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
-import * as FileSystem from 'expo-file-system';
+
+// Safely parse the AI alternatives response. Gemini now returns a JSON string (JSON mode),
+// but we still strip possible ```json fences and fall back to null on failure so the UI can
+// gracefully render the raw text instead of crashing.
+const parseAlternatives = (text) => {
+    if (!text || typeof text !== 'string') return null;
+    const cleaned = text
+        .trim()
+        .replace(/^```(?:json)?\s*/i, '')
+        .replace(/```\s*$/i, '');
+
+    const tryParse = (str) => {
+        try {
+            const obj = JSON.parse(str);
+            return obj && (Array.isArray(obj.alternatives) || obj.identifiedProduct || obj.bestAlternative) ? obj : null;
+        } catch {
+            return null;
+        }
+    };
+
+    const direct = tryParse(cleaned);
+    if (direct) return direct;
+
+    const match = cleaned.match(/\{[\s\S]*\}/);
+    return match ? tryParse(match[0]) : null;
+};
+
+const IdentifiedProduct = ({ name }) => (
+    <View style={styles.identifiedBox}>
+        <Text style={styles.identifiedLabel}>🔍  PRODUCT IDENTIFIED</Text>
+        <Text style={styles.identifiedName}>{name}</Text>
+    </View>
+);
+
+const BestAlternative = ({ pick }) => (
+    <View style={styles.bestAlt}>
+        <Text style={styles.bestAltLabel}>🏆  BEST ALTERNATIVE</Text>
+        <Text style={styles.bestAltName}>{pick.name || 'Recommended'}</Text>
+        {pick.reason ? <Text style={styles.bestAltReason}>{pick.reason}</Text> : null}
+    </View>
+);
+
+const AlternativeCard = ({ alt, index }) => (
+    <View style={styles.altCard}>
+        <View style={styles.altHeader}>
+            <View style={styles.altBadge}>
+                <Text style={styles.altBadgeText}>{index + 1}</Text>
+            </View>
+            <View style={styles.altTitleWrap}>
+                <Text style={styles.altName}>{alt.name || 'Alternative'}</Text>
+                {alt.brand ? <Text style={styles.altBrand}>{alt.brand}</Text> : null}
+            </View>
+        </View>
+        {alt.similarity ? (
+            <View style={styles.altSection}>
+                <Text style={styles.altSectionLabel}>Similarity</Text>
+                <Text style={styles.altSimilarity}>{alt.similarity}</Text>
+            </View>
+        ) : null}
+        {Array.isArray(alt.benefits) && alt.benefits.length > 0 ? (
+            <View style={styles.altSection}>
+                <Text style={styles.altSectionLabel}>Key Benefits</Text>
+                {alt.benefits.map((b, i) => (
+                    <Text key={i} style={styles.altBenefit}>✓  {b}</Text>
+                ))}
+            </View>
+        ) : null}
+    </View>
+);
 
 const AlternativeScreen = ({ navigation }) => {
     const [image, setImage] = useState(null);
+    const [imageBase64, setImageBase64] = useState(null);
     const [productName, setProductName] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedBrand, setSelectedBrand] = useState('');
@@ -27,6 +96,7 @@ const AlternativeScreen = ({ navigation }) => {
     const [brands, setBrands] = useState([]);
     const [loading, setLoading] = useState(false);
     const [aiResponse, setAiResponse] = useState('');
+    const [parsed, setParsed] = useState(null);
     const [menuOpen, setMenuOpen] = useState(false);
     const slideAnim = useState(new Animated.Value(-200))[0];
 
@@ -123,6 +193,7 @@ const AlternativeScreen = ({ navigation }) => {
 
         if (!result.canceled) {
             setImage(result.assets[0].uri);
+            setImageBase64(result.assets[0].base64);
         }
     };
 
@@ -134,19 +205,17 @@ const AlternativeScreen = ({ navigation }) => {
 
         setLoading(true);
         setAiResponse('');
+        setParsed(null);
 
         try {
-            let imageBase64 = null;
-            
-            if (image) {
-                const base64 = await FileSystem.readAsStringAsync(image, {
-                    encoding: FileSystem.EncodingType.Base64,
-                });
-                imageBase64 = `data:image/jpeg;base64,${base64}`;
+            let imageDataUri = null;
+
+            if (image && imageBase64) {
+                imageDataUri = `data:image/jpeg;base64,${imageBase64}`;
             }
 
             const requestBody = {
-                image: imageBase64,
+                image: imageDataUri,
                 productName: productName,
                 category: selectedCategory,
                 brand: selectedBrand,
@@ -168,6 +237,7 @@ const AlternativeScreen = ({ navigation }) => {
             
             if (data.success && data.alternative) {
                 setAiResponse(data.alternative);
+                setParsed(parseAlternatives(data.alternative));
             } else {
                 throw new Error(data.error || 'No response from AI');
             }
@@ -264,8 +334,29 @@ const AlternativeScreen = ({ navigation }) => {
             {loading && <ActivityIndicator size="large" color="#0d9488" style={{ marginTop: 20 }} />}
 
             {aiResponse !== '' && (
-                <View style={styles.resultBox}>
-                    <Text style={styles.responseText}>{aiResponse}</Text>
+                <View style={styles.resultContainer}>
+                    {parsed ? (
+                        <>
+                            {parsed.identifiedProduct ? (
+                                <IdentifiedProduct name={parsed.identifiedProduct} />
+                            ) : null}
+                            {parsed.bestAlternative && (parsed.bestAlternative.name || parsed.bestAlternative.reason) ? (
+                                <BestAlternative pick={parsed.bestAlternative} />
+                            ) : null}
+                            {Array.isArray(parsed.alternatives) && parsed.alternatives.length > 0 ? (
+                                <>
+                                    <Text style={styles.sectionLabel}>Alternatives to consider</Text>
+                                    {parsed.alternatives.map((alt, i) => (
+                                        <AlternativeCard key={i} alt={alt} index={i} />
+                                    ))}
+                                </>
+                            ) : null}
+                        </>
+                    ) : (
+                        <View style={styles.resultBox}>
+                            <Text style={styles.responseText}>{aiResponse}</Text>
+                        </View>
+                    )}
                 </View>
             )}
         </ScrollView>
@@ -352,6 +443,132 @@ const styles = StyleSheet.create({
         fontSize: 15,
         color: '#374151',
         lineHeight: 22,
+    },
+    // ---- Structured alternatives UI ----
+    resultContainer: {
+        marginTop: 10,
+        width: '100%',
+    },
+    sectionLabel: {
+        fontSize: 13,
+        fontWeight: '700',
+        color: '#0f766e',
+        letterSpacing: 0.5,
+        textTransform: 'uppercase',
+        marginTop: 18,
+        marginBottom: 8,
+    },
+    identifiedBox: {
+        backgroundColor: '#ffffff',
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#cbd5e1',
+        padding: 14,
+        width: '100%',
+    },
+    identifiedLabel: {
+        color: '#0f766e',
+        fontSize: 12,
+        fontWeight: '800',
+        letterSpacing: 1,
+        marginBottom: 4,
+    },
+    identifiedName: {
+        color: '#111827',
+        fontSize: 16,
+        fontWeight: '700',
+    },
+    bestAlt: {
+        backgroundColor: '#0d9488',
+        borderRadius: 12,
+        padding: 16,
+        marginTop: 12,
+        width: '100%',
+        shadowColor: '#0d9488',
+        shadowOpacity: 0.25,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 4 },
+        elevation: 3,
+    },
+    bestAltLabel: {
+        color: '#ccfbf1',
+        fontSize: 12,
+        fontWeight: '800',
+        letterSpacing: 1,
+        marginBottom: 6,
+    },
+    bestAltName: {
+        color: '#ffffff',
+        fontSize: 18,
+        fontWeight: '800',
+    },
+    bestAltReason: {
+        color: '#e6fffb',
+        fontSize: 14,
+        marginTop: 4,
+        lineHeight: 20,
+    },
+    altCard: {
+        backgroundColor: '#ffffff',
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+        padding: 14,
+        marginBottom: 12,
+        width: '100%',
+    },
+    altHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    altBadge: {
+        width: 28,
+        height: 28,
+        borderRadius: 14,
+        backgroundColor: '#0d9488',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 10,
+    },
+    altBadgeText: {
+        color: '#ffffff',
+        fontWeight: '800',
+        fontSize: 14,
+    },
+    altTitleWrap: {
+        flex: 1,
+    },
+    altName: {
+        fontSize: 15,
+        fontWeight: '700',
+        color: '#111827',
+    },
+    altBrand: {
+        fontSize: 12,
+        color: '#6b7280',
+        marginTop: 2,
+    },
+    altSection: {
+        marginBottom: 8,
+    },
+    altSectionLabel: {
+        fontSize: 11,
+        fontWeight: '700',
+        color: '#0f766e',
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+        marginBottom: 4,
+    },
+    altSimilarity: {
+        fontSize: 13,
+        color: '#374151',
+        lineHeight: 20,
+    },
+    altBenefit: {
+        fontSize: 13,
+        color: '#15803d',
+        lineHeight: 20,
     },
     imagePreview: {
         width: 120,

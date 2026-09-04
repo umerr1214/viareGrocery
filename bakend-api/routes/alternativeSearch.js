@@ -4,6 +4,29 @@ const router = express.Router();
 const config = require('../config/environment');
 const { validateAlternativeSearch } = require('../middleware/validation');
 
+// Instruct Gemini to return a strict JSON schema so the mobile app can render
+// clean product cards instead of a raw wall of prose.
+const JSON_SCHEMA_INSTRUCTION = `
+Respond ONLY with a valid JSON object (no markdown, no code fences) that matches exactly this schema:
+{
+  "identifiedProduct": "<string: the product identified>",
+  "bestAlternative": { "name": "<string>", "reason": "<string: one sentence on why this is the best choice>" },
+  "alternatives": [
+    {
+      "name": "<string: alternative product name>",
+      "brand": "<string: brand of the alternative>",
+      "similarity": "<string: 1-2 sentences on how it is similar to the original>",
+      "benefits": ["<string: benefit 1>", "<string: benefit 2>", "<string: benefit 3>"]
+    }
+  ]
+}
+Include 3-4 items in "alternatives". Keep each benefit short (under 15 words).`;
+
+const JSON_GENERATION_CONFIG = {
+    responseMimeType: 'application/json',
+    temperature: 0.4,
+};
+
 router.post('/', validateAlternativeSearch, async (req, res, next) => {
     try {
         const { image, productName, category, brand } = req.body;
@@ -15,27 +38,10 @@ router.post('/', validateAlternativeSearch, async (req, res, next) => {
         if (image) {
             apiUrl = config.geminiVisionApiUrl;
             
-            prompt = `Analyze this product image and find 3-4 best alternative products from different brands. 
+            prompt = `Analyze this product image and find 3-4 best alternative products from different brands.
             Consider factors like quality, nutritional value, and similar benefits.
-            Provide detailed recommendations with alternative product names from other brands, how they are similar, 
-            and their key benefits. Format the response in a clear, user-friendly way.
-            
-            Please provide your response in this format:
-            🔍 Product Analysis & Alternatives
-            
-            Product Identified: [What product this appears to be]
-            
-            Alternative 1: [Product Name from different brand]
-            Similarity: [How it's similar to the original]
-            Key Benefits: [2-3 main benefits]
-            
-            Alternative 2: [Product Name from different brand]
-            Similarity: [How it's similar to the original]
-            Key Benefits: [2-3 main benefits]
-            
-            Alternative 3: [Product Name from different brand]
-            Similarity: [How it's similar to the original]
-            Key Benefits: [2-3 main benefits]`;
+            Set "identifiedProduct" to the product you identify in the image.
+            ${JSON_SCHEMA_INSTRUCTION}`;
             
             requestBody = {
                 contents: [{
@@ -50,40 +56,25 @@ router.post('/', validateAlternativeSearch, async (req, res, next) => {
                             }
                         }
                     ]
-                }]
+                }],
+                generationConfig: JSON_GENERATION_CONFIG
             };
         } else {
             apiUrl = config.geminiTextApiUrl;
             
-            prompt = `Find 3-4 best alternative products for "${productName}" from different brands in the "${category}" category. 
+            prompt = `Find 3-4 best alternative products for "${productName}" from different brands in the "${category}" category.
             The user currently uses "${brand}" brand, so recommend alternatives from other brands.
             Consider factors like quality, nutritional value, and similar benefits.
-            Provide detailed recommendations with alternative product names from other brands, how they are similar, 
-            and their key benefits. Format the response in a clear, user-friendly way.
-            
-            Please provide your response in this format:
-            🔍 Product Analysis & Alternatives
-            
-            Original Product: ${productName} (${brand}) - ${category}
-            
-            Alternative 1: [Product Name from different brand]
-            Similarity: [How it's similar to ${productName}]
-            Key Benefits: [2-3 main benefits]
-            
-            Alternative 2: [Product Name from different brand]
-            Similarity: [How it's similar to ${productName}]
-            Key Benefits: [2-3 main benefits]
-            
-            Alternative 3: [Product Name from different brand]
-            Similarity: [How it's similar to ${productName}]
-            Key Benefits: [2-3 main benefits]`;
+            Set "identifiedProduct" to "${productName} (${brand}) - ${category}".
+            ${JSON_SCHEMA_INSTRUCTION}`;
             
             requestBody = {
                 contents: [{
                     parts: [{
                         text: prompt
                     }]
-                }]
+                }],
+                generationConfig: JSON_GENERATION_CONFIG
             };
         }
         
@@ -117,4 +108,4 @@ router.post('/', validateAlternativeSearch, async (req, res, next) => {
     }
 });
 
-module.exports = router; 
+module.exports = router;
