@@ -83,6 +83,7 @@ We set out to revolutionize physical retail with the intelligence and personaliz
    npm install
    cp .env.example .env
    # Add your Firebase and Gemini API keys
+   npm run seed        # one-time: load store data into Firestore (required for Path Optimization)
    npm start
    ```
 
@@ -102,6 +103,27 @@ FIREBASE_PROJECT_ID=your_firebase_project_id
 FIREBASE_PRIVATE_KEY=your_firebase_private_key
 FIREBASE_CLIENT_EMAIL=your_firebase_client_email
 ```
+
+### Database Seeding
+
+A new Firestore database starts empty, so you must seed it **once** for the **Path Optimization** feature (`POST /api/path`) to work. Run these from `bakend-api/` after adding your Firebase credentials to `.env`:
+
+```bash
+npm run seed          # required — writes the product→aisle map (storeMaps/demoStore)
+npm run check-seed    # optional — verify the seed data was written
+```
+
+Without seeding, `/api/path` returns `404 Store map not found`. The AI features (image analysis and product alternatives) call Gemini directly and need **no** seeding.
+
+Optional reference data (not required by any current endpoint):
+
+```bash
+node scripts/seedCategory.js
+node scripts/seedBrand.js
+node scripts/seedCategoryBrands.js
+```
+
+See [`bakend-api/README.md`](bakend-api/README.md) for full details.
 
 ## 🔧 Configuration
 

@@ -31,7 +31,7 @@ A smart grocery shopping assistant backend API that provides product recommendat
 
 3. **Set up environment variables**
    ```bash
-   cp env.example .env
+   cp .env.example .env
    ```
    
    Edit `.env` and add your configuration:
@@ -41,10 +41,65 @@ A smart grocery shopping assistant backend API that provides product recommendat
    NODE_ENV=development
    ```
 
-4. **Seed the database** (if using Firebase)
+4. **Seed the database** (required for the Path Optimization feature)
    ```bash
    npm run seed
    ```
+
+   Writes the product→aisle map to Firestore. Without it, `POST /api/path` returns
+   `404 Store map not found`. See **Database Seeding** below for optional reference
+   data and verification.
+
+## 🌱 Database Seeding
+
+The backend keeps its store-layout data in **Firebase Firestore**, and a fresh database
+starts empty. You must seed it before the **Path Optimization** feature works.
+
+> The AI features (`POST /api/suggest-direct` and `POST /api/alternatives`) call Google
+> Gemini directly and need **no** seeding — only a valid `GEMINI_API_KEY`.
+
+### Required — for `POST /api/path`
+
+```bash
+npm run seed
+```
+
+- Runs `scripts/seedAisleMap.js`.
+- Creates the `storeMaps/demoStore` document containing `productToAisleMap`
+  (product name → aisle).
+- If this document is missing, `POST /api/path` responds with
+  `404 { "error": "Store map not found" }`.
+
+> The store **graph** (`data/storeGraph.json`) ships with the repo and is loaded
+> locally, so it does **not** need seeding.
+
+### Optional — reference data
+
+These populate category/brand lookups. No current endpoint reads them, but they are
+handy if you extend the app:
+
+```bash
+node scripts/seedCategory.js         # storeMaps/categoryList    → categories[]
+node scripts/seedBrand.js            # storeMaps/brandList       → brands[]
+node scripts/seedCategoryBrands.js   # categoryBrands/<category> → brands[]
+```
+
+### Verify the seed data
+
+```bash
+npm run check-seed
+```
+
+Runs `scripts/checkSeedData.js` and prints ✅/❌ for each expected document
+(`storeMaps/demoStore`, `storeMaps/categoryList`, `storeMaps/brandList`, and the
+`categoryBrands` collection).
+
+### Prerequisites
+
+- A Firestore database must exist in your Firebase project — create it in the
+  [Firebase console](https://console.firebase.google.com/) first.
+- `FIREBASE_PROJECT_ID`, `FIREBASE_PRIVATE_KEY`, and `FIREBASE_CLIENT_EMAIL` must be
+  set in `.env` using your Firebase **service account** key.
 
 ## 🏃‍♂️ Running the Application
 
