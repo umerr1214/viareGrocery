@@ -28,6 +28,9 @@ jspm_packages/
 # Optional REPL history
 .node_repl_history
 
+# AI assistant guidance (local only)
+CLAUDE.md
+
 # Output of 'npm pack'
 *.tgz
 
