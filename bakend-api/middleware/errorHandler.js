@@ -1,5 +1,10 @@
 const errorHandler = (err, req, res, next) => {
   console.error('❌ Error:', err);
+  // Node hides the real reason for network failures (e.g. "fetch failed") in err.cause.
+  // Surface it so issues like ECONNRESET / TLS / DNS are visible instead of opaque.
+  if (err && err.cause) {
+    console.error('↳ Cause:', err.cause.code || '', err.cause.message || err.cause);
+  }
 
   // Default error
   let statusCode = 500;

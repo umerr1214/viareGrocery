@@ -3,7 +3,16 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 async function getGeminiResponse({ images, prompt, category }) {
-    const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
+    const model = genAI.getGenerativeModel({
+        model: "gemini-3.6-flash",
+        generationConfig: {
+            // Force structured JSON output so the mobile app can render a clean
+            // table/cards UI instead of raw markdown text. Lower temperature keeps
+            // the schema stable.
+            responseMimeType: "application/json",
+            temperature: 0.4,
+        },
+    });
 
     const imageParts = await Promise.all(
         images.map((file) => ({

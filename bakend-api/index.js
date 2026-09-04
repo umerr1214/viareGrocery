@@ -1,3 +1,12 @@
+// Force IPv4-first DNS resolution.
+// On this network, Node's built-in fetch (undici) prefers Google's IPv6 addresses
+// (the 2001:4860:: block) for generativelanguage.googleapis.com, which hang ~10s and
+// then reset -> "TypeError: fetch failed" (ECONNRESET) before TLS is established.
+// Preferring IPv4 avoids the broken IPv6 route. This is process-global, so it also
+// fixes the REST path in config/environment.js / routes/alternativeSearch.js.
+const dns = require('dns');
+dns.setDefaultResultOrder('ipv4first');
+
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
@@ -5,7 +14,7 @@ const config = require('./config/environment');
 const errorHandler = require('./middleware/errorHandler');
 const { validateImageUpload } = require('./middleware/validation');
 const { getGeminiResponse } = require('./utils/gemini');
-const pathOptimizer = require('./routes/pathOptimizer');
+const pathOptimizer = require('./routes/pathoptimizer');
 const alternativeSearch = require('./routes/alternativeSearch');
 
 const app = express();
@@ -47,27 +56,33 @@ app.post('/api/suggest-direct', upload.array('files'), validateImageUpload, asyn
         const files = req.files;
         const category = req.body.category || '';
         
-        const prompt = `
-You are a smart grocery shopping assistant. I'll send you images of products from the ${category} category.
+        const prompt = `You are a smart grocery shopping assistant. Analyze the product image(s) from the "${category || 'general'}" category.
 
-Please analyze these product images and provide:
-1. Product identification (what each product is)
-2. Quality assessment (freshness, packaging, etc.)
-3. Value comparison (price vs quality)
-4. Health/nutritional considerations
-5. Storage recommendations
+Return ONLY valid JSON with no markdown, no code fences and no extra text, in EXACTLY this shape:
+{
+  "products": [
+    {
+      "name": "short product name",
+      "brand": "brand name",
+      "rating": 4.2,
+      "price": "$4.50 - $6.50",
+      "pros": ["concise benefit", "concise benefit"],
+      "cons": ["concise concern"],
+      "storage": "one short storage tip"
+    }
+  ],
+  "bestPick": {
+    "name": "product name",
+    "reason": "one short sentence on why it wins"
+  }
+}
 
-For each product, provide:
-- Product name and brand
-- Quality rating (1-5 stars)
-- Price estimate (if visible)
-- Key features/benefits
-- Any concerns or recommendations
-
-End with a clear recommendation: "👉 Best Pick: [Product Name] - [Brief reason why]"
-
-Make your response helpful, detailed, and easy to understand for grocery shoppers.
-        `;
+Rules:
+- "rating" is a number from 0 to 5 (one decimal allowed).
+- Keep strings SHORT: at most 3 pros and 2 cons, each 6 words or fewer.
+- Add one entry in "products" for each distinct product visible.
+- "bestPick" must reference one of the products.
+- Use only the keys shown above.`;
 
         const recommendation = await getGeminiResponse({ images: files, prompt, category });
 

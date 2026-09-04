@@ -15,10 +15,100 @@ import { Picker } from '@react-native-picker/picker';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 
+// Safely parse the AI recommendation. Gemini now returns a JSON string (JSON mode),
+// but we still strip possible ```json fences and fall back to null on failure so the
+// UI can gracefully render the raw text instead of crashing.
+const parseRecommendation = (text) => {
+    if (!text || typeof text !== 'string') return null;
+    const cleaned = text
+        .trim()
+        .replace(/^```(?:json)?\s*/i, '')
+        .replace(/```\s*$/i, '');
+
+    const tryParse = (str) => {
+        try {
+            const obj = JSON.parse(str);
+            return obj && (Array.isArray(obj.products) || obj.bestPick) ? obj : null;
+        } catch {
+            return null;
+        }
+    };
+
+    const direct = tryParse(cleaned);
+    if (direct) return direct;
+
+    const match = cleaned.match(/\{[\s\S]*\}/);
+    return match ? tryParse(match[0]) : null;
+};
+
+const StarRating = ({ value = 0 }) => {
+    const num = Number(value) || 0;
+    const rounded = Math.max(0, Math.min(5, Math.round(num)));
+    const stars = '★'.repeat(rounded) + '☆'.repeat(5 - rounded);
+    return (
+        <View style={styles.starRow}>
+            <Text style={styles.stars}>{stars}</Text>
+            <Text style={styles.ratingNum}>{num.toFixed(1)}</Text>
+        </View>
+    );
+};
+
+const ComparisonTable = ({ products }) => (
+    <View style={styles.table}>
+        <View style={[styles.tableRow, styles.tableHeader]}>
+            <Text style={[styles.cellProduct, styles.headerText]}>Product</Text>
+            <Text style={[styles.cellRating, styles.headerText]}>Rating</Text>
+            <Text style={[styles.cellPrice, styles.headerText]}>Price</Text>
+        </View>
+        {products.map((p, i) => (
+            <View key={i} style={[styles.tableRow, i % 2 === 1 && styles.tableRowAlt]}>
+                <View style={styles.cellProduct}>
+                    <Text style={styles.cellProductText} numberOfLines={2}>{p.name || '—'}</Text>
+                    {p.brand ? <Text style={styles.cellBrandText}>{p.brand}</Text> : null}
+                </View>
+                <View style={styles.cellRating}>
+                    <StarRating value={p.rating} />
+                </View>
+                <Text style={styles.cellPriceText} numberOfLines={2}>{p.price || '—'}</Text>
+            </View>
+        ))}
+    </View>
+);
+
+const ProductDetails = ({ product }) => (
+    <View style={styles.detailCard}>
+        <Text style={styles.detailTitle}>{product.name || 'Product'}</Text>
+        {Array.isArray(product.pros) && product.pros.length > 0 && (
+            <View style={styles.detailSection}>
+                {product.pros.map((x, i) => (
+                    <Text key={`pro-${i}`} style={styles.proItem}>✓  {x}</Text>
+                ))}
+            </View>
+        )}
+        {Array.isArray(product.cons) && product.cons.length > 0 && (
+            <View style={styles.detailSection}>
+                {product.cons.map((x, i) => (
+                    <Text key={`con-${i}`} style={styles.conItem}>⚠  {x}</Text>
+                ))}
+            </View>
+        )}
+        {product.storage ? <Text style={styles.storageItem}>ℹ  {product.storage}</Text> : null}
+    </View>
+);
+
+const BestPick = ({ pick }) => (
+    <View style={styles.bestPick}>
+        <Text style={styles.bestPickLabel}>🏆  BEST PICK</Text>
+        <Text style={styles.bestPickName}>{pick.name || 'Recommended'}</Text>
+        {pick.reason ? <Text style={styles.bestPickReason}>{pick.reason}</Text> : null}
+    </View>
+);
+
 const SuggestScreen = ({ navigation }) => {
     const [images, setImages] = useState([]);
     const [loading, setLoading] = useState(false);
     const [recommendation, setRecommendation] = useState('');
+    const [parsed, setParsed] = useState(null);
     const [menuOpen, setMenuOpen] = useState(false);
     const slideAnim = useRef(new Animated.Value(-200)).current;
     const [selectedCategory, setSelectedCategory] = useState('');
@@ -119,6 +209,7 @@ const SuggestScreen = ({ navigation }) => {
         try {
             setLoading(true);
             setRecommendation('');
+            setParsed(null);
 
             const formData = new FormData();
             images.forEach((uri, index) => {
@@ -156,7 +247,9 @@ const SuggestScreen = ({ navigation }) => {
 
             const data = await response.json();
             console.log('Response data:', data);
-            setRecommendation(data?.recommendation || "No response from AI.");
+            const raw = data?.recommendation || "No response from AI.";
+            setRecommendation(raw);
+            setParsed(parseRecommendation(raw));
         } catch (error) {
             console.error('Request error:', error);
             setRecommendation("Something went wrong. Please try again.");
@@ -218,8 +311,28 @@ const SuggestScreen = ({ navigation }) => {
             {loading && <ActivityIndicator size="large" color="#0d9488" style={{ marginTop: 20 }} />}
 
             {recommendation !== '' && (
-                <View style={styles.resultBox}>
-                    <Text style={styles.resultText}>{recommendation}</Text>
+                <View style={styles.resultContainer}>
+                    {parsed ? (
+                        <>
+                            {parsed.bestPick && (parsed.bestPick.name || parsed.bestPick.reason) ? (
+                                <BestPick pick={parsed.bestPick} />
+                            ) : null}
+
+                            {Array.isArray(parsed.products) && parsed.products.length > 0 ? (
+                                <>
+                                    <Text style={styles.sectionLabel}>Product Comparison</Text>
+                                    <ComparisonTable products={parsed.products} />
+                                    {parsed.products.map((p, i) => (
+                                        <ProductDetails key={i} product={p} />
+                                    ))}
+                                </>
+                            ) : null}
+                        </>
+                    ) : (
+                        <View style={styles.resultBox}>
+                            <Text style={styles.resultText}>{recommendation}</Text>
+                        </View>
+                    )}
                 </View>
             )}
         </ScrollView>
@@ -359,5 +472,157 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#0d9488',
         fontWeight: '600',
+    },
+
+    // ---- Structured recommendation UI ----
+    resultContainer: {
+        marginTop: 10,
+        width: '100%',
+    },
+    sectionLabel: {
+        fontSize: 13,
+        fontWeight: '700',
+        color: '#0f766e',
+        letterSpacing: 0.5,
+        textTransform: 'uppercase',
+        marginTop: 18,
+        marginBottom: 8,
+    },
+    bestPick: {
+        backgroundColor: '#0d9488',
+        borderRadius: 12,
+        padding: 16,
+        width: '100%',
+        shadowColor: '#0d9488',
+        shadowOpacity: 0.25,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 4 },
+        elevation: 3,
+    },
+    bestPickLabel: {
+        color: '#ccfbf1',
+        fontSize: 12,
+        fontWeight: '800',
+        letterSpacing: 1,
+        marginBottom: 6,
+    },
+    bestPickName: {
+        color: '#ffffff',
+        fontSize: 18,
+        fontWeight: '800',
+    },
+    bestPickReason: {
+        color: '#e6fffb',
+        fontSize: 14,
+        marginTop: 4,
+        lineHeight: 20,
+    },
+    table: {
+        width: '100%',
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#cbd5e1',
+        overflow: 'hidden',
+        backgroundColor: '#ffffff',
+    },
+    tableRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 10,
+        paddingHorizontal: 8,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e2e8f0',
+    },
+    tableRowAlt: {
+        backgroundColor: '#f1f5f9',
+    },
+    tableHeader: {
+        backgroundColor: '#0f766e',
+    },
+    headerText: {
+        color: '#ffffff',
+        fontWeight: '700',
+        fontSize: 12,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+    },
+    cellProduct: {
+        flex: 3,
+        paddingRight: 6,
+    },
+    cellProductText: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: '#111827',
+    },
+    cellBrandText: {
+        fontSize: 11,
+        color: '#6b7280',
+        marginTop: 2,
+    },
+    cellRating: {
+        flex: 2,
+        alignItems: 'center',
+        textAlign: 'center',
+    },
+    cellPrice: {
+        flex: 2,
+        textAlign: 'right',
+    },
+    cellPriceText: {
+        flex: 2,
+        textAlign: 'right',
+        fontSize: 12,
+        color: '#111827',
+        fontWeight: '600',
+    },
+    starRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    stars: {
+        color: '#f59e0b',
+        fontSize: 13,
+        letterSpacing: 1,
+    },
+    ratingNum: {
+        color: '#374151',
+        fontSize: 11,
+        marginLeft: 4,
+        fontWeight: '600',
+    },
+    detailCard: {
+        backgroundColor: '#ffffff',
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+        padding: 14,
+        marginTop: 10,
+        width: '100%',
+    },
+    detailTitle: {
+        fontSize: 15,
+        fontWeight: '700',
+        color: '#111827',
+        marginBottom: 8,
+    },
+    detailSection: {
+        marginBottom: 6,
+    },
+    proItem: {
+        fontSize: 13,
+        color: '#15803d',
+        lineHeight: 20,
+    },
+    conItem: {
+        fontSize: 13,
+        color: '#b45309',
+        lineHeight: 20,
+    },
+    storageItem: {
+        fontSize: 13,
+        color: '#0f766e',
+        lineHeight: 20,
+        marginTop: 4,
     },
 });
