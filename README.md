@@ -56,7 +56,7 @@ A comprehensive In-store grocery shopping application with AI-powered recommenda
 
 ## 🏆 Hackathon Submission
 
-This project was built in under 24 hours as part of Remote Base Hackathon 3.0.  
+This project was built at a hackathon.  
 We set out to revolutionize physical retail with the intelligence and personalization of online shopping — and we’re just getting started.
 
 ---
