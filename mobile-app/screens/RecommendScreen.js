@@ -8,16 +8,36 @@ import {
     Easing,
     Image
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { useAuth } from '../navigation/AuthContext';
 import {get, getDatabase, ref} from "firebase/database";
 
 const RecommendScreen = () => {
     const navigation = useNavigation();
+    const { logout } = useAuth();
     const [menuOpen, setMenuOpen] = useState(false);
     const slideAnim = useRef(new Animated.Value(-200)).current;
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView edges={['top']} style={styles.safeArea}>
+            <View style={styles.container}>
+                <View style={styles.navBar}>
+                    <View>
+                        <Text style={styles.navBrand}>VIARE</Text>
+                        <Text style={styles.navRole}>CUSTOMER</Text>
+                    </View>
+                    <TouchableOpacity
+                        accessibilityRole="button"
+                        accessibilityLabel="Sign out"
+                        onPress={logout}
+                        style={styles.logoutButton}
+                    >
+                        <Text style={styles.logoutIcon}>↪</Text>
+                        <Text style={styles.logoutText}>Sign out</Text>
+                    </TouchableOpacity>
+                </View>
+
             {/* Page Heading */}
             <Text style={styles.heading}>Let Viare Help You!</Text>
 
@@ -60,19 +80,63 @@ const RecommendScreen = () => {
                 <Image source={require('../assets/logo.png')} style={styles.logo} />
                 <Text style={styles.logoText}>Viare AI</Text>
             </View>
-        </View>
+            </View>
+        </SafeAreaView>
     );
 };
 
 export default RecommendScreen;
 
 const styles = StyleSheet.create({
+    safeArea: {
+        flex: 1,
+        backgroundColor: '#f9fafb',
+    },
     container: {
         flex: 1,
         backgroundColor: '#f9fafb',
         padding: 24,
-        paddingTop: 60,
+        paddingTop: 8,
         position: 'relative',
+    },
+    navBar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 24,
+    },
+    navBrand: {
+        color: '#0d9488',
+        fontSize: 16,
+        fontWeight: '900',
+        letterSpacing: 2,
+    },
+    navRole: {
+        color: '#6b7280',
+        fontSize: 9,
+        fontWeight: '800',
+        letterSpacing: 1.2,
+        marginTop: 3,
+    },
+    logoutButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#d1d5db',
+        borderRadius: 9,
+        paddingHorizontal: 11,
+        paddingVertical: 8,
+    },
+    logoutIcon: {
+        color: '#8c4b32',
+        fontSize: 17,
+        fontWeight: '800',
+        marginRight: 5,
+    },
+    logoutText: {
+        color: '#8c4b32',
+        fontSize: 12,
+        fontWeight: '800',
     },
     heading: {
         fontSize: 24,

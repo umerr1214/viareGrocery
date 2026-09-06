@@ -1,13 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
     ActivityIndicator,
-    SafeAreaView,
     ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
     View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../navigation/AuthContext';
 import config from '../config/environment';
 import { getAuthHeaders } from '../services/apiService';
@@ -82,7 +82,7 @@ const SellerDashboardScreen = ({ route }) => {
     const averageVisits = scoreboard.length ? Math.round(totalVisits / scoreboard.length) : 0;
 
     return (
-        <SafeAreaView style={styles.safeArea}>
+        <SafeAreaView edges={['top']} style={styles.safeArea}>
             <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
                 <View style={styles.navBar}>
                     <View>
@@ -210,9 +210,9 @@ export default SellerDashboardScreen;
 
 const styles = StyleSheet.create({
     safeArea: { flex: 1, backgroundColor: '#f4f7f5' },
-    content: { padding: 22, paddingBottom: 36 },
+    content: { padding: 22, paddingTop: 8, paddingBottom: 36 },
     navBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 },
-    navBrand: { color: '#1e3a2b', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
+    navBrand: {color: '#0d9488', fontSize: 16, fontWeight: '900',    letterSpacing: 2,},
     navRole: { color: '#8a958d', fontSize: 9, fontWeight: '800', letterSpacing: 1.2, marginTop: 3 },
     logoutButton: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#d8e1da', borderRadius: 9, paddingHorizontal: 11, paddingVertical: 8 },
     logoutIcon: { color: '#8c4b32', fontSize: 17, fontWeight: '800', marginRight: 5 },

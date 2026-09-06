@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import AppNavigator from './navigation/AppNavigator';
 import { AuthProvider } from './navigation/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export default function App() {
     return (
@@ -12,12 +13,14 @@ export default function App() {
             {/* AuthProvider sits outside NavigationContainer: it only depends on
                 Firebase auth state, while AppNavigator inside it consumes the
                 context to choose which stack to render. */}
-            <AuthProvider>
-                <NavigationContainer>
-                    <StatusBar style="auto" />
-                    <AppNavigator />
-                </NavigationContainer>
-            </AuthProvider>
+            <SafeAreaProvider>
+                <AuthProvider>
+                    <NavigationContainer>
+                        <StatusBar style="auto" />
+                        <AppNavigator />
+                    </NavigationContainer>
+                </AuthProvider>
+            </SafeAreaProvider>
         </ErrorBoundary>
     );
 }
