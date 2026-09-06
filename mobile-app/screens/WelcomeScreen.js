@@ -14,12 +14,14 @@ import {
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import {auth} from '../firebase/firebaseConfig';
+import { useAuth } from '../navigation/AuthContext';
 
 const WelcomeScreen = ({navigation}) => {
     const [listText, setListText] = useState('');
     const [username, setUsername] = useState('');
     const [menuOpen, setMenuOpen] = useState(false);
     const slideAnim = useState(new Animated.Value(-200))[0];
+    const { logout } = useAuth();
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged(user => {
@@ -80,6 +82,11 @@ const WelcomeScreen = ({navigation}) => {
             <Animated.View style={[styles.menu, {transform: [{translateX: slideAnim}]}]}>
                 <TouchableOpacity onPress={() => navigation.navigate('Recommend')} style={styles.menuItem}>
                     <Text style={styles.menuText}>Back to Home</Text>
+                </TouchableOpacity>
+
+                {/* Bottom-anchored via signOutItem's marginTop:'auto' on the full-height drawer */}
+                <TouchableOpacity onPress={logout} style={styles.signOutItem}>
+                    <Text style={styles.signOutText}>Sign Out</Text>
                 </TouchableOpacity>
             </Animated.View>
 
@@ -151,6 +158,18 @@ const styles = StyleSheet.create({
     menuText: {
         fontSize: 16,
         color: '#0d9488',
+        fontWeight: '600'
+    },
+    signOutItem: {
+        marginTop: 'auto',
+        paddingTop: 16,
+        paddingBottom: 32,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(13, 148, 136, 0.25)'
+    },
+    signOutText: {
+        fontSize: 16,
+        color: '#b91c1c',
         fontWeight: '600'
     },
     logoRow: {

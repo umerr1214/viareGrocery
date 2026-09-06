@@ -16,6 +16,7 @@ import {
 import ImageZoom from 'react-native-image-pan-zoom';
 import config from '../config/environment';
 import { getAuthHeaders } from '../services/apiService';
+import { useAuth } from '../navigation/AuthContext';
 
 const PathScreen = ({ route, navigation }) => {
     const { shoppingData } = route.params;
@@ -25,6 +26,7 @@ const PathScreen = ({ route, navigation }) => {
     const [menuOpen, setMenuOpen] = useState(false);
     const [mapModalVisible, setMapModalVisible] = useState(false);
     const slideAnim = useState(new Animated.Value(-200))[0];
+    const { logout } = useAuth();
 
     useEffect(() => {
         const fetchPath = async () => {
@@ -89,6 +91,11 @@ const PathScreen = ({ route, navigation }) => {
             </TouchableOpacity>
                 <TouchableOpacity onPress={handleExit} style={styles.menuItem}>
                     <Text style={styles.menuText}>New List</Text>
+                </TouchableOpacity>
+
+                {/* Bottom-anchored via signOutItem's marginTop:'auto' on the full-height drawer */}
+                <TouchableOpacity onPress={logout} style={styles.signOutItem}>
+                    <Text style={styles.signOutText}>Sign Out</Text>
                 </TouchableOpacity>
             </Animated.View>
 
@@ -240,6 +247,18 @@ const styles = StyleSheet.create({
     menuText: {
         fontSize: 16,
         color: '#0d9488',
+        fontWeight: '600',
+    },
+    signOutItem: {
+        marginTop: 'auto',
+        paddingTop: 16,
+        paddingBottom: 32,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(13, 148, 136, 0.25)',
+    },
+    signOutText: {
+        fontSize: 16,
+        color: '#b91c1c',
         fontWeight: '600',
     },
     mapContainer: {

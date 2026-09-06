@@ -15,6 +15,7 @@ import { Picker } from '@react-native-picker/picker';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 import { getAuthHeaders } from '../services/apiService';
+import { useAuth } from '../navigation/AuthContext';
 
 // Safely parse the AI recommendation. Gemini now returns a JSON string (JSON mode),
 // but we still strip possible ```json fences and fall back to null on failure so the
@@ -106,6 +107,7 @@ const BestPick = ({ pick }) => (
 );
 
 const SuggestScreen = ({ navigation }) => {
+    const { logout } = useAuth();
     const [images, setImages] = useState([]);
     const [loading, setLoading] = useState(false);
     const [recommendation, setRecommendation] = useState('');
@@ -270,6 +272,11 @@ const SuggestScreen = ({ navigation }) => {
             <Animated.View style={[styles.menu, { transform: [{ translateX: slideAnim }] }]}>
                 <TouchableOpacity onPress={() => navigation.navigate('Recommend')} style={styles.menuItem}>
                     <Text style={styles.menuText}>Home</Text>
+                </TouchableOpacity>
+
+                {/* Bottom-anchored via signOutItem's marginTop:'auto' on the full-height drawer */}
+                <TouchableOpacity onPress={logout} style={styles.signOutItem}>
+                    <Text style={styles.signOutText}>Sign Out</Text>
                 </TouchableOpacity>
             </Animated.View>
 
@@ -474,6 +481,18 @@ const styles = StyleSheet.create({
     menuText: {
         fontSize: 16,
         color: '#0d9488',
+        fontWeight: '600',
+    },
+    signOutItem: {
+        marginTop: 'auto',
+        paddingTop: 16,
+        paddingBottom: 32,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(13, 148, 136, 0.25)',
+    },
+    signOutText: {
+        fontSize: 16,
+        color: '#b91c1c',
         fontWeight: '600',
     },
 
