@@ -9,7 +9,7 @@ import PathScreen from '../screens/PathScreen';
 import RecommendScreen from '../screens/RecommendScreen';
 import AlternativeScreen from '../screens/AlternativeScreen';
 import SuggestionScreen from '../screens/SuggestionScreen';
-import OwnerHomeScreen from '../screens/OwnerHomeScreen';
+import SellerDashboardScreen from '../screens/SellerDashboardScreen';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useAuth } from './AuthContext';
 
@@ -42,7 +42,7 @@ const AppNavigator = () => {
                     <Stack.Screen name="Signup" component={SignupScreen} />
                 </>
             ) : role === 'store_owner' ? (
-                <Stack.Screen name="OwnerHome" component={OwnerHomeScreen} />
+                <Stack.Screen name="SellerDashboard" component={SellerDashboardScreen} />
             ) : (
                 <>
                     {/* Recommend is the customer hub (links to the other three

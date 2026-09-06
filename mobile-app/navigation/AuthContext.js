@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }) => {
             //    Wrapped because a token refresh can fail offline, and that must
             //    not stop us falling through to the doc lookup below.
             try {
-                const tokenResult = await u.getIdTokenResult();
+                const tokenResult = await u.getIdTokenResult(true);
                 if (tokenResult.claims && tokenResult.claims.role) {
                     setRole(tokenResult.claims.role);
                     setLoading(false);

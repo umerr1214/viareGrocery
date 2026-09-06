@@ -17,6 +17,7 @@ const { authenticate, requireRole } = require('./middleware/authMiddleware');
 const { getGeminiResponse } = require('./utils/gemini');
 const pathOptimizer = require('./routes/pathoptimizer');
 const alternativeSearch = require('./routes/alternativeSearch');
+const ownerAnalytics = require('./routes/ownerAnalytics');
 
 const app = express();
 
@@ -98,6 +99,7 @@ Rules:
 // API Routes (all require a valid Firebase ID token)
 app.use('/api/path', authenticate, pathOptimizer);
 app.use('/api/alternatives', authenticate, alternativeSearch);
+app.use('/api/owner', authenticate, requireRole('store_owner'), ownerAnalytics);
 
 // Role-split plumbing proof. Deliberately trivial: it exists only to confirm
 // that authenticate + requireRole work end to end, so a customer token gets 403

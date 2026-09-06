@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../firebase/firestoreService');
 const { findShortestPath } = require('../utils/dijkstra');
+const { recordAisleVisits } = require('../services/aisleAnalytics');
 const storeGraph = require('../data/storeGraph.json');
 
 router.post('/', async (req, res) => {
@@ -77,6 +78,15 @@ router.post('/', async (req, res) => {
     });
 
     console.log('Instructions:', instructions);
+
+    // Count each aisle once per successfully generated customer route.
+    // Analytics failures should not make an otherwise valid customer route fail.
+    try {
+      await recordAisleVisits(aisles);
+    } catch (analyticsError) {
+      console.error('Error recording aisle visits:', analyticsError);
+    }
+
     res.json({ path, instructions, notFound });
   } catch (err) {
     console.error('Error in pathOptimizer:', err);
