@@ -1,4 +1,19 @@
 import config from '../config/environment';
+import { auth } from '../firebase/firebaseConfig';
+
+/**
+ * Builds the Authorization header for the currently signed-in user.
+ * getIdToken() returns the cached token while it is still valid and silently
+ * refreshes it when it is not, so this is safe to call on every request.
+ *
+ * Exported because PathScreen, AlternativeScreen and SuggestionScreen call
+ * fetch() directly instead of going through this service - keeping the token
+ * logic here means it lives in exactly one place.
+ */
+export const getAuthHeaders = async () => {
+  const token = auth.currentUser ? await auth.currentUser.getIdToken() : null;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
 
 class ApiService {
   constructor() {
@@ -9,11 +24,14 @@ class ApiService {
   // Generic request method
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
-    
+
+    const authHeaders = await getAuthHeaders();
+
     const defaultOptions = {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        ...authHeaders,
       },
       timeout: this.timeout,
     };

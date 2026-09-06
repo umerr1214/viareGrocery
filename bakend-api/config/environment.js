@@ -26,7 +26,16 @@ const config = {
 };
 
 // Validate required environment variables
-const requiredEnvVars = ['GEMINI_API_KEY'];
+// Firebase is mandatory, not optional: middleware/authMiddleware.js verifies an
+// ID token on every /api/* route, so the Admin SDK must initialise at startup.
+// Without this check a missing key surfaces as "Cannot read properties of
+// undefined (reading 'replace')" from firebaseAdmin.js instead of a clear error.
+const requiredEnvVars = [
+  'GEMINI_API_KEY',
+  'FIREBASE_PROJECT_ID',
+  'FIREBASE_PRIVATE_KEY',
+  'FIREBASE_CLIENT_EMAIL'
+];
 for (const envVar of requiredEnvVars) {
   if (!process.env[envVar]) {
     console.error(`❌ Missing required environment variable: ${envVar}`);

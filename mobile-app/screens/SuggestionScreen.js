@@ -14,6 +14,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
+import { getAuthHeaders } from '../services/apiService';
 
 // Safely parse the AI recommendation. Gemini now returns a JSON string (JSON mode),
 // but we still strip possible ```json fences and fall back to null on failure so the
@@ -233,6 +234,8 @@ const SuggestScreen = ({ navigation }) => {
                 body: formData,
                 headers: {
                     'Content-Type': 'multipart/form-data',
+                    // /api/suggest-direct now requires a valid Firebase ID token
+                    ...(await getAuthHeaders()),
                 },
             });
 

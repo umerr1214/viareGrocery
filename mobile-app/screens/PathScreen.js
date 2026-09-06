@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import ImageZoom from 'react-native-image-pan-zoom';
 import config from '../config/environment';
+import { getAuthHeaders } from '../services/apiService';
 
 const PathScreen = ({ route, navigation }) => {
     const { shoppingData } = route.params;
@@ -30,7 +31,11 @@ const PathScreen = ({ route, navigation }) => {
             try {
                 const response = await fetch(`${config.apiBaseUrl}/api/path`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // /api/path now requires a valid Firebase ID token
+                        ...(await getAuthHeaders()),
+                    },
                     body: JSON.stringify(shoppingData),
                 });
 

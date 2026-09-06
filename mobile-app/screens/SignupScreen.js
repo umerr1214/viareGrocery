@@ -8,7 +8,8 @@ import {
     Alert, Image
 } from 'react-native';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { auth } from '../firebase/firebaseConfig'; // adjust if in a different path
+import { doc, setDoc } from 'firebase/firestore';
+import { auth, db } from '../firebase/firebaseConfig'; // adjust if in a different path
 
 const SignupScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
@@ -24,8 +25,32 @@ const SignupScreen = ({ navigation }) => {
                 displayName: name
             });
 
+            // users/{uid} is the client-readable source of truth for the role.
+            // Only 'customer' is ever written here: the `role` custom claim the
+            // backend checks can only be set with the Admin SDK, and the Firestore
+            // rules forbid changing the role field afterwards - so a client can
+            // never promote itself to store_owner.
+            //
+            // Deliberately non-fatal. By this point the auth account already
+            // exists, so surfacing a rules/permissions failure as "Signup Failed"
+            // would leave the user stuck (retrying gives "email already in use").
+            // A missing doc is handled downstream - AuthContext falls back to
+            // 'customer' - so we log and carry on.
+            try {
+                await setDoc(doc(db, 'users', user.uid), {
+                    email,
+                    name,
+                    role: 'customer',
+                    createdAt: Date.now(),
+                });
+            } catch (docError) {
+                console.warn(`Could not create users/${user.uid} profile doc:`, docError.message);
+            }
+
+            // createUserWithEmailAndPassword already signs the user in, so
+            // onAuthStateChanged fires and AppNavigator swaps to the customer
+            // stack on its own - sending them to Login here would be a step back.
             Alert.alert('Success', 'Account created successfully!');
-            navigation.navigate('Login');
         } catch (error) {
             Alert.alert('Signup Failed', error.message);
         }

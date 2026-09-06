@@ -1,15 +1,7 @@
-const admin = require('firebase-admin');
-const config = require('../config/environment');
-
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: config.firebaseProjectId,
-      privateKey: config.firebasePrivateKey.replace(/\\n/g, '\n'),
-      clientEmail: config.firebaseClientEmail,
-    }),
-  });
-}
+// Admin SDK init lives in ./firebaseAdmin so auth middleware and Firestore
+// share a single app instance. This module keeps exporting the db so existing
+// `require('./firestoreService')` callers keep working unchanged.
+const admin = require('./firebaseAdmin');
 
 const db = admin.firestore();
 module.exports = db;

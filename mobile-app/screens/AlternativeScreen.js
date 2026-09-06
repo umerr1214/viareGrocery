@@ -16,6 +16,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
 import { db } from '../firebase/firebaseConfig';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
+import { getAuthHeaders } from '../services/apiService';
 
 // Safely parse the AI alternatives response. Gemini now returns a JSON string (JSON mode),
 // but we still strip possible ```json fences and fall back to null on failure so the UI can
@@ -225,6 +226,8 @@ const AlternativeScreen = ({ navigation }) => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    // /api/alternatives now requires a valid Firebase ID token
+                    ...(await getAuthHeaders()),
                 },
                 body: JSON.stringify(requestBody),
             });

@@ -13,7 +13,10 @@ const LoginScreen = ({ navigation }) => {
         try {
             await signInWithEmailAndPassword(auth, email, password);
             Alert.alert('Login Successful!', 'Welcome back!');
-            navigation.navigate('Recommend'); // Navigate to Welcome screen
+            // No navigation here on purpose: signing in fires onAuthStateChanged,
+            // and AppNavigator swaps to the customer or store_owner stack itself.
+            // Navigating manually would race that swap and can target a route
+            // ('Recommend') that no longer exists once the stack has changed.
         } catch (error) {
             Alert.alert('Login Failed', error.message);
         }

@@ -13,6 +13,7 @@ const multer = require('multer');
 const config = require('./config/environment');
 const errorHandler = require('./middleware/errorHandler');
 const { validateImageUpload } = require('./middleware/validation');
+const { authenticate, requireRole } = require('./middleware/authMiddleware');
 const { getGeminiResponse } = require('./utils/gemini');
 const pathOptimizer = require('./routes/pathoptimizer');
 const alternativeSearch = require('./routes/alternativeSearch');
@@ -51,7 +52,9 @@ app.get('/health', (req, res) => {
 });
 
 // 🔥 GEMINI Direct Endpoint
-app.post('/api/suggest-direct', upload.array('files'), validateImageUpload, async (req, res, next) => {
+// authenticate runs before multer so unauthenticated callers are rejected
+// without the server having to buffer their upload first.
+app.post('/api/suggest-direct', authenticate, upload.array('files'), validateImageUpload, async (req, res, next) => {
     try {
         const files = req.files;
         const category = req.body.category || '';
@@ -92,9 +95,21 @@ Rules:
     }
 });
 
-// API Routes
-app.use('/api/path', pathOptimizer);
-app.use('/api/alternatives', alternativeSearch);
+// API Routes (all require a valid Firebase ID token)
+app.use('/api/path', authenticate, pathOptimizer);
+app.use('/api/alternatives', authenticate, alternativeSearch);
+
+// Role-split plumbing proof. Deliberately trivial: it exists only to confirm
+// that authenticate + requireRole work end to end, so a customer token gets 403
+// and a store_owner token gets 200. Delete or repurpose once a real
+// store-owner endpoint lands.
+app.get('/api/owner/ping', authenticate, requireRole('store_owner'), (req, res) => {
+  res.json({
+    ok: true,
+    uid: req.user.uid,
+    role: req.user.role
+  });
+});
 
 // 404 handler - use proper catch-all pattern for Express 4.x
 app.use('*', (req, res) => {

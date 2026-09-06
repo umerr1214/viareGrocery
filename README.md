@@ -1,4 +1,4 @@
-cdx sa   A\Z-*98# Viare Grocery - AI-Powered In-Store Shopping Assistant
+# Viare Grocery - AI-Powered In-Store Shopping Assistant
 
 A comprehensive In-store grocery shopping application with AI-powered recommendations, store path optimization, and intelligent product analysis.
 
@@ -10,6 +10,7 @@ A comprehensive In-store grocery shopping application with AI-powered recommenda
 - **Alternative Product Suggestions** - Find similar products from different brands
 - **Category-Based Organization** - Browse products by grocery categories
 - **User Authentication** - Secure signup/login with Firebase Auth
+- **Role-Based Access Control** - Customer and store-owner roles, enforced server-side
 
 ### AI Integration
 - **Google Gemini AI** - Advanced product analysis and recommendations
@@ -51,6 +52,7 @@ A comprehensive In-store grocery shopping application with AI-powered recommenda
 4. **Alternative Screen** - Product alternatives with AI
 5. **Suggestion Screen** - Image-based product analysis
 6. **Path Screen** - Store navigation optimization
+7. **Owner Home** - Store-owner landing screen, rendered only for the `store_owner` role
 
 ---
 
@@ -74,7 +76,7 @@ We set out to revolutionize physical retail with the intelligence and personaliz
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd shahi_tukre
+   cd viareGrocery
    ```
 
 2. **Backend Setup**
@@ -134,26 +136,109 @@ See [`bakend-api/README.md`](bakend-api/README.md) for full details.
 4. Download service account key
 5. Update Firebase config in mobile app
 
+### Firestore Security Rules
+
+Rules live in the **Firebase Console** → Firestore Database → **Rules** tab, and the Console is the source of truth for the `viaregrocery` project. This project does not use the Firebase CLI, so there is deliberately no `firestore.rules` / `firebase.json` / `.firebaserc` in the repo — edit in the Console and remember to click **Publish**.
+
+Rules govern **only the mobile client**. Everything in `bakend-api/` uses the Firebase Admin SDK, which bypasses security rules entirely — so the seed scripts and `makeStoreOwner.js` keep working regardless of how tight the rules get.
+
+| Path | Client access |
+|---|---|
+| `users/{uid}` | read and create own document only; `role` is immutable on update; delete denied |
+| `storeMaps/**`, `categoryBrands/**` | read-only, and only while signed in |
+| anything else | denied (Firestore default) |
+
+Three details that are easy to break if the rules are ever rewritten:
+
+- **Never add a blanket `match /{document=**} { allow read: if request.auth != null; }`.** Firestore rules are *additive* — a request is allowed if **any** matching block allows it — so a catch-all would override the self-only guard on `users/{uid}` and let every signed-in customer read every other customer's email and name. Enumerate the catalog collections instead.
+- **`categoryBrands` needs a recursive wildcard** (`match /categoryBrands/{doc=**}`), because `AlternativeScreen` falls back to a `categoryBrands/{category}/brands` subcollection. A single-segment pattern would not match it and that code path would start throwing `PERMISSION_DENIED`.
+- **Profile creation is pinned to `role: 'customer'`** and updates compare `request.resource.data.role == resource.data.role`, so a client can never promote itself. `store_owner` is granted server-side by `npm run make-owner` in `bakend-api/`, which sets a Firebase custom claim — the backend authorises requests from that claim, never from the client-writable document.
+
 ### Gemini AI Setup
 1. Get API key from Google AI Studio
 2. Add to backend environment variables
 3. Configure model (gemini-1.5-flash)
 
+## 🔐 Authentication & Roles
+
+Every backend API route and every app screen is gated by Firebase Authentication, and users are split into two roles.
+
+### Roles
+
+| Role | How it is granted | What it sees |
+|---|---|---|
+| `customer` | automatically at signup | Recommend hub → Alternatives, Suggestions, Path Optimization |
+| `store_owner` | `npm run make-owner -- <email>` in `bakend-api/` | Owner home (a stub for now) |
+
+The authoritative role is a **Firebase custom claim** inside the ID token, so the backend reads it from the token it already verified — no extra database lookup per request. `users/{uid}` in Firestore is a client-readable copy that the app falls back to, and if neither is present the role defaults to `customer`.
+
+### Protected endpoints
+
+`bakend-api/middleware/authMiddleware.js` provides two middlewares:
+
+- **`authenticate`** — requires `Authorization: Bearer <idToken>`, verifies it with `admin.auth().verifyIdToken()`, and attaches `req.user = { uid, email, role }`. Returns **401** when the token is missing or invalid.
+- **`requireRole(...roles)`** — returns **403** unless `req.user.role` is in the list.
+
+| Endpoint | Protection |
+|---|---|
+| `GET /health` | public |
+| `POST /api/suggest-direct` | `authenticate`, placed *before* `multer` so unauthenticated callers are rejected without the server buffering their upload |
+| `POST /api/path` | `authenticate` |
+| `POST /api/alternatives` | `authenticate` |
+| `GET /api/owner/ping` | `authenticate` + `requireRole('store_owner')` |
+
+`/api/owner/ping` is a throwaway proof endpoint — it exists only to demonstrate the role split (customer token → 403, owner token → 200). Delete or repurpose it once a real owner endpoint lands.
+
+### Mobile app
+
+`mobile-app/navigation/AuthContext.js` exposes `{ user, role, loading, logout }` through `useAuth()`, and `AppNavigator.js` renders one of three stacks from it:
+
+| Auth state | Stack |
+|---|---|
+| signed out | `Login`, `Signup` |
+| `store_owner` | `OwnerHome` |
+| `customer` | `Recommend` (landing), `Welcome`, `PathScreen`, `AlternativeScreen`, `SuggestionScreen` |
+
+Because the swap is driven by auth state, **screens no longer navigate after sign-in or sign-out**. `LoginScreen` and `SignupScreen` used to call `navigation.navigate()`, which raced the stack change and could target a route that no longer existed.
+
+Every backend call must now carry a token. `mobile-app/services/apiService.js` exports `getAuthHeaders()`, which `PathScreen`, `AlternativeScreen` and `SuggestionScreen` spread into the headers of their own `fetch` calls.
+
+### Granting store-owner access
+
+```bash
+cd bakend-api
+npm run make-owner -- owner@example.com
+```
+
+The account must already exist — sign up in the app first. The script sets the `role: 'store_owner'` custom claim and merges the role into `users/{uid}`, and it is idempotent. Custom claims only reach the client on the next token refresh, so **the owner must sign out and back in**.
+
+### Known gaps
+
+- `OwnerHomeScreen` is intentionally a stub — no owner features exist yet.
+- `bakend-api/routes/suggestRoute.js` is **not mounted** in `index.js`. It also predates the auth work and carries no `authenticate` guard, so if it is ever mounted it must be given one.
+- `AlternativeScreen` and `SuggestionScreen` hardcode a LAN IP (`http://192.168.18.140:3000`) instead of using `config.apiBaseUrl` like `PathScreen` does.
+
 ## 📊 Project Structure
 
 ```
-shahi_tukre/
+viareGrocery/
 ├── bakend-api/          # Express.js backend
-│   ├── routes/          # API endpoints
+│   ├── routes/          # API endpoints (pathoptimizer, alternativeSearch)
+│   ├── middleware/      # auth (authenticate / requireRole), validation, error handling
+│   ├── scripts/         # Firestore seeding + makeStoreOwner.js role grant
+│   ├── config/          # Environment configuration
 │   ├── utils/           # Utilities (Dijkstra, Gemini)
-│   ├── data/           # Store and product data
-│   └── firebase/       # Firebase admin config
+│   ├── data/            # Store and product data
+│   └── firebase/        # Admin SDK init + Firestore service
 ├── mobile-app/          # React Native frontend
-│   ├── screens/         # App screens
-│   ├── navigation/      # Navigation setup
-│   ├── firebase/       # Firebase client config
-│   └── assets/         # Images and icons
-└── shared/             # Shared utilities and models
+│   ├── screens/         # App screens (including OwnerHomeScreen)
+│   ├── navigation/      # AppNavigator + AuthContext (role-based stacks)
+│   ├── services/        # apiService, including getAuthHeaders()
+│   ├── components/      # ErrorBoundary, LoadingSpinner
+│   ├── config/          # Environment configuration
+│   ├── firebase/        # Firebase client config
+│   └── assets/          # Images and icons
+└── README.md
 ```
 
 ## 🎯 Key Features
