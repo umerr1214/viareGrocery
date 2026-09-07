@@ -46,6 +46,17 @@ const SellerHomeScreen = ({ navigation }) => {
                         See store insights, prioritise placements, and optimise your store using customer route activity.
                     </Text>
                    </TouchableOpacity>
+
+                <TouchableOpacity
+                    accessibilityRole="button"
+                    onPress={() => navigation.navigate('Stock')}
+                    style={styles.card}
+                >
+                    <Text style={styles.cardTitle}>Track Your Stock</Text>
+                    <Text style={styles.cardDesc}>
+                        See what you hold by category, and get flagged when items in a category are running low or out.
+                    </Text>
+                </TouchableOpacity>
             </View>
         </SafeAreaView>
     );

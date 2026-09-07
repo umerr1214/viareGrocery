@@ -1,5 +1,6 @@
 const db = require('../firebase/firestoreService');
 const { STORE_ID, getAisleScoreboard } = require('../services/aisleAnalytics');
+const { getInventory } = require('../services/inventoryService');
 
 async function checkDoc(collection, docId, expectedField) {
   const ref = db.collection(collection).doc(docId);
@@ -73,6 +74,21 @@ async function checkStoreAnalytics() {
   }
 }
 
+async function checkInventory() {
+  // Reads through the same service GET /api/owner/inventory uses, so an empty
+  // result here is exactly the empty state the owner stock screen would render.
+  const inventory = await getInventory();
+  const { summary } = inventory;
+
+  if (summary.products === 0) {
+    console.log(`❌ storeInventory/${STORE_ID}/products — MISSING (no documents), GET /api/owner/inventory returns an empty stock list`);
+    console.log('   💡 Run: node scripts/seedInventory.js');
+    return;
+  }
+
+  console.log(`✅ storeInventory/${STORE_ID}/products — ${summary.products} products across ${summary.categories} categories, ${summary.lowStock} low, ${summary.outOfStock} out of stock`);
+}
+
 async function main() {
   console.log('Checking Firestore seed data...\n');
 
@@ -81,6 +97,7 @@ async function main() {
   await checkDoc('storeMaps', 'brandList', 'brands');
   await checkCategoryBrands();
   await checkStoreAnalytics();
+  await checkInventory();
 
   console.log('\nDone.');
 }

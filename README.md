@@ -185,9 +185,15 @@ The authoritative role is a **Firebase custom claim** inside the ID token, so th
 | `POST /api/suggest-direct` | `authenticate`, placed *before* `multer` so unauthenticated callers are rejected without the server buffering their upload |
 | `POST /api/path` | `authenticate` |
 | `POST /api/alternatives` | `authenticate` |
+| `GET /api/owner/aisle-stats` | `authenticate` + `requireRole('store_owner')` |
+| `GET /api/owner/inventory` | `authenticate` + `requireRole('store_owner')` |
 | `GET /api/owner/ping` | `authenticate` + `requireRole('store_owner')` |
 
-`/api/owner/ping` is a throwaway proof endpoint — it exists only to demonstrate the role split (customer token → 403, owner token → 200). Delete or repurpose it once a real owner endpoint lands.
+`GET /api/owner/aisle-stats` backs the Seller Insights dashboard. It accepts `?period=today|7d|30d` (default `7d`) and `?limit=1..100` (default 20); an unrecognised period returns **400**. Rows are ranked by visits inside that rolling window, so the same aisle can lead different periods.
+
+`GET /api/owner/inventory` backs the owner **Track Your Stock** screen. It reads `storeInventory/<storeId>/products`, groups the products by category and returns a per-item stock status (`out` / `low` / `ok`) plus a per-category roll-up, with categories and items needing attention first. Seed it with `npm run seed-inventory` in `bakend-api`.
+
+`/api/owner/ping` is a throwaway proof endpoint — it exists only to demonstrate the role split (customer token → 403, owner token → 200). A real owner endpoint has now landed, so it can be deleted.
 
 ### Mobile app
 

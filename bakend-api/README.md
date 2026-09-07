@@ -92,18 +92,79 @@ automatically: every successful `POST /api/path` increments a visit counter for 
 aisle on the generated route. On a fresh database it is empty, so the dashboard shows
 "No aisle activity yet".
 
-```bash
-node scripts/seedStoreAnalytics.js   # storeAnalytics/demoStore/aisles → { aisle, visits, lastVisitedAt }
+Each aisle document looks like this:
+
+```jsonc
+{
+  "aisle": "Aisle10",
+  "visits": 140,                      // all-time total
+  "dailyVisits": {                    // per-day buckets, UTC "YYYY-MM-DD"
+    "2026-09-07": 18,
+    "2026-09-06": 5
+  },
+  "lastVisitedAt": "<timestamp>"
+}
 ```
 
-- Seeds six aisles with staggered visit counts so the dashboard renders immediately.
-- Idempotent: re-running resets the baseline instead of inflating it.
-- Aisle names match `storeMaps/demoStore.productToAisleMap` (`Aisle1`…`Aisle20`), so
-  real customer routes keep incrementing the seeded rows rather than creating parallel
-  ones. The document ids are the same SHA-1 hashes `services/aisleAnalytics.js` uses.
+`dailyVisits` is what makes the period tabs work. `?period=today|7d|30d` sums the last
+1, 7 or 30 day keys and re-ranks on that total, so an aisle can lead one window and not
+another. `recordAisleVisits` increments today's key with `FieldValue.increment(1)`,
+which creates the key on first write — a new day needs no rollover job.
+
+```bash
+node scripts/seedStoreAnalytics.js   # storeAnalytics/demoStore/aisles → 6 aisles × 30 days
+```
+
+- Seeds six aisles with 30 days of `dailyVisits`, shaped so **each period has a
+  different hot aisle** (a promo spike today, a weekend snacking pattern, and an older
+  bulk-buying tail). It prints all three leaderboards and confirms they differ.
+- Deterministic and idempotent: no randomness, and it overwrites each doc so day keys
+  left over from a run on an earlier date are dropped.
+- The patterns are date-driven, so re-running on a different weekday shifts the numbers
+  while keeping the shapes.
+- Aisle names match `storeMaps/demoStore.productToAisleMap` (`Aisle1`…`Aisle20`), and
+  both the document ids and the day keys come from `services/aisleAnalytics.js`, so real
+  customer routes increment these rows rather than creating parallel ones.
 - `storeAnalytics/demoStore` is only the **parent** document for that subcollection.
   Per-aisle fields stored directly on it are read by no endpoint; the script clears
   them if present.
+
+> Day boundaries are **UTC**. The store's local timezone is not modelled; if you add it,
+> change `dayKey()` in `services/aisleAnalytics.js` — it is the single source of truth
+> for both writing and aggregating buckets.
+
+### Optional — Store Inventory demo data
+
+`GET /api/owner/inventory` (the owner **Track Your Stock** screen) reads
+`storeInventory/<storeId>/products`, one document per product:
+
+```jsonc
+{
+  "name": "Zeera",
+  "brand": "National",
+  "category": "Herbs & spices",
+  "aisle": "Aisle1",
+  "quantity": 6,               // units on hand
+  "lowStockThreshold": 10,     // quantity <= this is "low", 0 is "out"
+  "updatedAt": "<timestamp>"
+}
+```
+
+The endpoint groups the products by category and computes a stock status per product
+(`out` → `low` → `ok`) plus a roll-up per category, so the owner sees which categories
+need restocking before drilling in. Categories and items needing attention are returned
+first.
+
+```bash
+npm run seed-inventory         # storeInventory/demoStore/products → 60 products × 20 categories
+```
+
+- Seeds the demo store's 60-product catalogue (name, brand, category and aisle taken from
+  the root `abc.csv`) with quantities shaped so the low / out-of-stock alerts are
+  demonstrable (a few items at 0, several at or below the threshold).
+- Deterministic and idempotent: `batch.set` overwrites each doc, so re-running resets the
+  baseline. `STORE_ID`, the threshold and the collection path all come from
+  `services/inventoryService.js`, so the seed writes exactly the documents the API reads.
 
 ### Verify the seed data
 
@@ -113,7 +174,8 @@ npm run check-seed
 
 Runs `scripts/checkSeedData.js` and prints ✅/❌ for each expected document
 (`storeMaps/demoStore`, `storeMaps/categoryList`, `storeMaps/brandList`, the
-`categoryBrands` collection, and `storeAnalytics/demoStore/aisles`).
+`categoryBrands` collection, `storeAnalytics/demoStore/aisles`, and
+`storeInventory/demoStore/products`).
 
 ### Prerequisites
 

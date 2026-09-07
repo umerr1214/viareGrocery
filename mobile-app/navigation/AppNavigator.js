@@ -11,6 +11,7 @@ import AlternativeScreen from '../screens/AlternativeScreen';
 import SuggestionScreen from '../screens/SuggestionScreen';
 import SellerDashboardScreen from '../screens/SellerDashboardScreen';
 import SellerHomeScreen from '../screens/SellerHomeScreen';
+import StockScreen from '../screens/StockScreen';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useAuth } from './AuthContext';
 
@@ -46,6 +47,7 @@ const AppNavigator = () => {
                 <>
                     <Stack.Screen name="SellerHome" component={SellerHomeScreen} />
                     <Stack.Screen name="SellerDashboard" component={SellerDashboardScreen} />
+                    <Stack.Screen name="Stock" component={StockScreen} />
                 </>
             ) : (
                 <>

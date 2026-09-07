@@ -1,5 +1,6 @@
 const express = require('express');
 const { getAisleScoreboard } = require('../services/aisleAnalytics');
+const { getInventory } = require('../services/inventoryService');
 
 const router = express.Router();
 
@@ -34,6 +35,19 @@ router.get('/aisle-stats', async (req, res) => {
   } catch (err) {
     console.error('Error loading aisle scoreboard:', err);
     res.status(500).json({ error: 'Unable to load aisle scoreboard' });
+  }
+});
+
+// Store inventory grouped by category for the owner "Track Your Stock" screen.
+// Mounted under /api/owner, so it already runs behind authenticate +
+// requireRole('store_owner'); no extra gating needed here.
+router.get('/inventory', async (req, res) => {
+  try {
+    const inventory = await getInventory();
+    res.json(inventory);
+  } catch (err) {
+    console.error('Error loading inventory:', err);
+    res.status(500).json({ error: 'Unable to load store inventory' });
   }
 });
 
