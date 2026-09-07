@@ -1,11 +1,14 @@
 import React from 'react';
 import {
-    SafeAreaView,
     StyleSheet,
     Text,
     TouchableOpacity,
     View,
 } from 'react-native';
+// react-native's built-in SafeAreaView ignores edges and applies no insets on
+// Android, which pushed the nav bar under the status bar - use the same
+// safe-area-context wrapper the dashboard screen relies on.
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../navigation/AuthContext';
 
 const SellerHomeScreen = ({ navigation }) => {
@@ -31,7 +34,7 @@ const SellerHomeScreen = ({ navigation }) => {
                 </View>
 
                 <Text style={styles.heading}>Store operations</Text>
-                <Text style={styles.subtitle}>Use customer route activity to make smarter placement decisions.</Text>
+                <Text style={styles.subtitle}>Actionable insights from real customer shopping routes.</Text>
 
                 <TouchableOpacity
                     accessibilityRole="button"

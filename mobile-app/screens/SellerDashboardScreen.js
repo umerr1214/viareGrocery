@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
     ActivityIndicator,
+    Animated,
+    Easing,
     ScrollView,
     StyleSheet,
     Text,
@@ -23,8 +25,17 @@ import { getAuthHeaders } from '../services/apiService';
 */
 const periods = ['Today', '7 days', '30 days'];
 
-const SellerDashboardScreen = ({ route }) => {
+// Maps each tab label to the ?period= value GET /api/owner/aisle-stats expects.
+const periodParams = {
+    'Today': 'today',
+    '7 days': '7d',
+    '30 days': '30d',
+};
+
+const SellerDashboardScreen = ({ route, navigation }) => {
     const { logout } = useAuth();
+    const [menuOpen, setMenuOpen] = useState(false);
+    const slideAnim = useState(new Animated.Value(-200))[0];
     const [selectedPeriod, setSelectedPeriod] = useState('7 days');
     const previewAisles = route?.params?.aisleVisits;
     const [aisleVisits, setAisleVisits] = useState(previewAisles || []);
@@ -47,9 +58,11 @@ const SellerDashboardScreen = ({ route }) => {
 
             try {
                 const headers = await getAuthHeaders();
-                const response = await fetch(`${config.apiBaseUrl}/api/owner/aisle-stats?limit=100`, {
-                    headers,
-                });
+                const period = periodParams[selectedPeriod] || '7d';
+                const response = await fetch(
+                    `${config.apiBaseUrl}/api/owner/aisle-stats?limit=100&period=${period}`,
+                    { headers }
+                );
                 const data = await response.json().catch(() => ({}));
 
                 if (!response.ok) {
@@ -70,10 +83,16 @@ const SellerDashboardScreen = ({ route }) => {
 
         loadAisleVisits();
         return () => { active = false; };
-    }, [previewAisles, reloadToken]);
+    }, [previewAisles, reloadToken, selectedPeriod]);
 
+    // The API returns every aisle document, including aisles with no visits inside
+    // the selected window, so zero-visit rows are dropped here instead of being
+    // rendered as empty bars with a count of 0.
     const scoreboard = useMemo(
-        () => [...aisleVisits].sort((first, second) => second.visits - first.visits).slice(0,5),
+        () => [...aisleVisits]
+            .filter((item) => (item.visits || 0) > 0)
+            .sort((first, second) => second.visits - first.visits)
+            .slice(0, 5),
         [aisleVisits]
     );
 
@@ -81,25 +100,34 @@ const SellerDashboardScreen = ({ route }) => {
     const hotAisle = scoreboard[0];
     const averageVisits = scoreboard.length ? Math.round(totalVisits / scoreboard.length) : 0;
 
+    const toggleMenu = () => {
+        setMenuOpen(!menuOpen);
+        Animated.timing(slideAnim, {
+            toValue: menuOpen ? -200 : 0,
+            duration: 300,
+            useNativeDriver: true,
+            easing: Easing.out(Easing.ease),
+        }).start();
+    };
+
     return (
         <SafeAreaView edges={['top']} style={styles.safeArea}>
-            <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-                <View style={styles.navBar}>
-                    <View>
-                        <Text style={styles.navBrand}>VIARE</Text>
-                        <Text style={styles.navRole}>STORE OWNER</Text>
-                    </View>
-                    <TouchableOpacity
-                        accessibilityRole="button"
-                        accessibilityLabel="Sign out"
-                        onPress={logout}
-                        style={styles.logoutButton}
-                    >
-                        <Text style={styles.logoutIcon}>↪</Text>
-                        <Text style={styles.logoutText}>Sign out</Text>
-                    </TouchableOpacity>
-                </View>
+            <TouchableOpacity onPress={toggleMenu} style={styles.menuButton}>
+                <Text style={styles.menuIcon}>☰</Text>
+            </TouchableOpacity>
 
+            <Animated.View style={[styles.menu, { transform: [{ translateX: slideAnim }] }]}>
+                <TouchableOpacity onPress={() => navigation.navigate('SellerHome')} style={styles.menuItem}>
+                    <Text style={styles.menuText}>Back to Home</Text>
+                </TouchableOpacity>
+
+                {/* Bottom-anchored via signOutItem's marginTop:'auto' on the full-height drawer */}
+                <TouchableOpacity onPress={logout} style={styles.signOutItem}>
+                    <Text style={styles.signOutText}>Sign Out</Text>
+                </TouchableOpacity>
+            </Animated.View>
+
+            <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
                 <View style={styles.header}>
                     <View>
                         <Text style={styles.title}>SELLER INSIGHTS</Text>
@@ -146,14 +174,25 @@ const SellerDashboardScreen = ({ route }) => {
                     </View>
                 )}
 
-                {!loading && !error && aisleVisits.length > 0 && <>
+                {!loading && !error && aisleVisits.length > 0 && scoreboard.length === 0 && (
+                    <View style={styles.statusPanel}>
+                        <Text style={styles.statusTitle}>No visits in this period</Text>
+                        <Text style={styles.statusText}>
+                            {selectedPeriod === 'Today'
+                                ? 'No customer route has touched an aisle today yet. Try a longer window.'
+                                : `No customer route touched an aisle in the last ${selectedPeriod}.`}
+                        </Text>
+                    </View>
+                )}
+
+                {!loading && !error && scoreboard.length > 0 && <>
                 <View style={styles.hotCard}>
                     <View style={styles.hotCardTop}>
                         <Text style={styles.hotLabel}>HOT AISLE</Text>
                     </View>
                     <Text style={styles.hotAisleName}>{hotAisle?.aisle || 'No aisle data yet'}</Text>
                     <Text style={styles.hotAisleMeta}>
-                        {hotAisle ? `${hotAisle.visits} customer route visits · ${hotAisle.code}` : 'Waiting for route data'}
+                        {hotAisle ? `${hotAisle.visits} customer route visits · ${selectedPeriod.toUpperCase()}` : 'Waiting for route data'}
                     </Text>
                     <View style={styles.hotProgressTrack}>
                         <View style={styles.hotProgressFill} />
@@ -210,13 +249,50 @@ export default SellerDashboardScreen;
 
 const styles = StyleSheet.create({
     safeArea: { flex: 1, backgroundColor: '#f4f7f5' },
-    content: { padding: 22, paddingTop: 8, paddingBottom: 36 },
-    navBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 },
-    navBrand: {color: '#0d9488', fontSize: 16, fontWeight: '900',    letterSpacing: 2,},
-    navRole: { color: '#8a958d', fontSize: 9, fontWeight: '800', letterSpacing: 1.2, marginTop: 3 },
-    logoutButton: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#d8e1da', borderRadius: 9, paddingHorizontal: 11, paddingVertical: 8 },
-    logoutIcon: { color: '#8c4b32', fontSize: 17, fontWeight: '800', marginRight: 5 },
-    logoutText: { color: '#8c4b32', fontSize: 12, fontWeight: '800' },
+    content: { padding: 22, paddingTop: 80, paddingBottom: 36 },
+    menuButton: {
+        position: 'absolute',
+        top: 40,
+        left: 20,
+        zIndex: 10,
+    },
+    menuIcon: {
+        fontSize: 26,
+        color: '#0d9488',
+    },
+    // top+bottom (not height:'100%') so the drawer spans the full screen even
+    // though the SafeAreaView parent shrinks its content box by the top inset.
+    menu: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        bottom: 0,
+        width: 200,
+        backgroundColor: '#e0f7f5',
+        paddingTop: 80,
+        paddingHorizontal: 20,
+        zIndex: 9,
+    },
+    menuItem: {
+        marginVertical: 12,
+    },
+    menuText: {
+        fontSize: 16,
+        color: '#0d9488',
+        fontWeight: '600',
+    },
+    signOutItem: {
+        marginTop: 'auto',
+        paddingTop: 16,
+        paddingBottom: 32,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(13, 148, 136, 0.25)',
+    },
+    signOutText: {
+        fontSize: 16,
+        color: '#b91c1c',
+        fontWeight: '600',
+    },
     header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 },
     eyebrow: { color: '#b45309', fontSize: 11, fontWeight: '800', letterSpacing: 1.5, marginBottom: 7 },
     title: { color: '#17211b', fontSize: 32, fontWeight: '800' },

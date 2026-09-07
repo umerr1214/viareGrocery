@@ -84,6 +84,27 @@ node scripts/seedBrand.js            # storeMaps/brandList       → brands[]
 node scripts/seedCategoryBrands.js   # categoryBrands/<category> → brands[]
 ```
 
+### Optional — Seller Insights demo data
+
+`GET /api/owner/aisle-stats` (the Seller Insights dashboard) reads
+`storeAnalytics/<storeId>/aisles`. That subcollection is normally populated
+automatically: every successful `POST /api/path` increments a visit counter for each
+aisle on the generated route. On a fresh database it is empty, so the dashboard shows
+"No aisle activity yet".
+
+```bash
+node scripts/seedStoreAnalytics.js   # storeAnalytics/demoStore/aisles → { aisle, visits, lastVisitedAt }
+```
+
+- Seeds six aisles with staggered visit counts so the dashboard renders immediately.
+- Idempotent: re-running resets the baseline instead of inflating it.
+- Aisle names match `storeMaps/demoStore.productToAisleMap` (`Aisle1`…`Aisle20`), so
+  real customer routes keep incrementing the seeded rows rather than creating parallel
+  ones. The document ids are the same SHA-1 hashes `services/aisleAnalytics.js` uses.
+- `storeAnalytics/demoStore` is only the **parent** document for that subcollection.
+  Per-aisle fields stored directly on it are read by no endpoint; the script clears
+  them if present.
+
 ### Verify the seed data
 
 ```bash
@@ -91,8 +112,8 @@ npm run check-seed
 ```
 
 Runs `scripts/checkSeedData.js` and prints ✅/❌ for each expected document
-(`storeMaps/demoStore`, `storeMaps/categoryList`, `storeMaps/brandList`, and the
-`categoryBrands` collection).
+(`storeMaps/demoStore`, `storeMaps/categoryList`, `storeMaps/brandList`, the
+`categoryBrands` collection, and `storeAnalytics/demoStore/aisles`).
 
 ### Prerequisites
 
